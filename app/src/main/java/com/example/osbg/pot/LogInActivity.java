@@ -1,0 +1,348 @@
+package com.example.osbg.pot;
+
+import android.Manifest;
+import android.annotation.TargetApi;
+import android.app.Activity;
+import android.app.KeyguardManager;
+import android.content.Context;
+import android.content.Intent;
+import android.content.pm.PackageManager;
+import android.hardware.fingerprint.FingerprintManager;
+import android.os.Build;
+import android.security.keystore.KeyGenParameterSpec;
+import android.security.keystore.KeyPermanentlyInvalidatedException;
+import android.security.keystore.KeyProperties;
+import android.support.design.widget.TextInputLayout;
+import android.support.v4.app.ActivityCompat;
+import android.support.v4.hardware.fingerprint.FingerprintManagerCompat;
+import android.support.v7.app.AppCompatActivity;
+import android.os.Bundle;
+import android.support.v7.widget.Toolbar;
+import android.text.Editable;
+import android.text.TextUtils;
+import android.text.TextWatcher;
+import android.view.Gravity;
+import android.view.View;
+import android.view.WindowManager;
+import android.widget.Button;
+import android.widget.EditText;
+import android.widget.ImageView;
+import android.widget.TextView;
+import android.widget.Toast;
+
+import java.io.IOException;
+import java.security.InvalidAlgorithmParameterException;
+import java.security.InvalidKeyException;
+import java.security.KeyStore;
+import java.security.KeyStoreException;
+import java.security.NoSuchAlgorithmException;
+import java.security.NoSuchProviderException;
+import java.security.UnrecoverableKeyException;
+import java.security.cert.CertificateException;
+
+import javax.crypto.Cipher;
+import javax.crypto.KeyGenerator;
+import javax.crypto.NoSuchPaddingException;
+import javax.crypto.SecretKey;
+
+import android.app.KeyguardManager;
+import android.content.pm.PackageManager;
+import android.hardware.fingerprint.FingerprintManager;
+import android.Manifest;
+import android.os.Build;
+import android.os.Bundle;
+import android.security.keystore.KeyGenParameterSpec;
+import android.security.keystore.KeyPermanentlyInvalidatedException;
+import android.security.keystore.KeyProperties;
+import android.support.v7.app.AppCompatActivity;
+import android.support.v4.app.ActivityCompat;
+import android.widget.TextView;
+import java.io.IOException;
+import java.security.InvalidAlgorithmParameterException;
+import java.security.InvalidKeyException;
+import java.security.KeyStore;
+import java.security.KeyStoreException;
+import java.security.NoSuchAlgorithmException;
+import java.security.NoSuchProviderException;
+import java.security.UnrecoverableKeyException;
+import java.security.cert.CertificateException;
+import javax.crypto.Cipher;
+import javax.crypto.KeyGenerator;
+import javax.crypto.NoSuchPaddingException;
+import javax.crypto.SecretKey;
+
+public class LogInActivity extends AppCompatActivity {
+
+    private EditText inputEmail, inputPassword;
+    private TextInputLayout inputLayoutEmail, inputLayoutPassword;
+    private TextView fingerprintInstructions, fingerprintSetupInstructions;
+    private ImageView fingerprintImage;
+
+    private static final String KEY_NAME = "yourKey";
+    private Cipher cipher;
+    private KeyStore keyStore;
+    private KeyGenerator keyGenerator;
+    private TextView textView;
+    private FingerprintManager.CryptoObject cryptoObject;
+    private FingerprintManager fingerprintManager;
+    private KeyguardManager keyguardManager;
+
+    @Override
+    protected void onCreate(Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+        setContentView(R.layout.activity_log_in);
+        Toolbar logInToolbar = (Toolbar) findViewById(R.id.log_in_toolbar);
+        setSupportActionBar(logInToolbar);
+        getSupportActionBar().setDisplayHomeAsUpEnabled(true);
+        getSupportActionBar().setDisplayShowTitleEnabled(false);
+        TextView toolbarLogInTitle = (TextView) findViewById(R.id.toolbarLogInTitle);
+        toolbarLogInTitle.setText("Login to Process of Things");
+
+        // Check if we're running on Android 6.0 (M) or higher
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+            //Fingerprint API only available on from Android 6.0 (M)
+            keyguardManager = (KeyguardManager) getSystemService(KEYGUARD_SERVICE);
+            fingerprintManager = (FingerprintManager) getSystemService(FINGERPRINT_SERVICE);
+            //FingerprintManager fingerprintManager = (FingerprintManager) getApplicationContext().getSystemService(Context.FINGERPRINT_SERVICE);
+            if (!fingerprintManager.isHardwareDetected()) {
+                fingerprintImage = (ImageView) findViewById(R.id.fingerprintImage);
+                fingerprintImage.setBackgroundResource(R.mipmap.fingerprint);
+
+                fingerprintInstructions = (TextView) findViewById(R.id.fingeprintInstructions);
+                fingerprintInstructions.setText("This device doesn't support fingerprint authorization. You can use password instead.");
+                fingerprintInstructions.setGravity(Gravity.CENTER);
+
+            }
+
+            if (ActivityCompat.checkSelfPermission(this, Manifest.permission.USE_FINGERPRINT) != PackageManager.PERMISSION_GRANTED) {
+                fingerprintImage = (ImageView) findViewById(R.id.fingerprintImage);
+                fingerprintImage.setBackgroundResource(R.mipmap.fingerprint);
+
+                fingerprintInstructions = (TextView) findViewById(R.id.fingeprintInstructions);
+                fingerprintInstructions.setText("This device supports fingerprint authorization, but the option is not enabled in the device's settings.");
+            }
+
+            if (!fingerprintManager.hasEnrolledFingerprints()) {
+                // User hasn't enrolled any fingerprints to authenticate with
+                fingerprintImage = (ImageView) findViewById(R.id.fingerprintImage);
+                fingerprintImage.setBackgroundResource(R.mipmap.fingerprint);
+
+                fingerprintInstructions = (TextView) findViewById(R.id.fingeprintInstructions);
+                fingerprintInstructions.setText("This device supports fingerprint authorization, but no fingerprint is configured (check device's security settings).");
+                fingerprintInstructions.setGravity(Gravity.CENTER);
+                return;
+            }
+
+            if(!keyguardManager.isKeyguardSecure()) {
+                fingerprintImage = (ImageView) findViewById(R.id.fingerprintImage);
+                fingerprintImage.setBackgroundResource(R.mipmap.fingerprint);
+
+                fingerprintInstructions = (TextView) findViewById(R.id.fingeprintInstructions);
+                fingerprintInstructions.setText("This device supports fingerprint authorization. Please enable lockscreen security in your device's Settings first.");
+                fingerprintInstructions.setGravity(Gravity.CENTER);
+            }
+            else {
+                try {
+                    fingerprintImage = (ImageView) findViewById(R.id.fingerprintImage);
+                    fingerprintImage.setBackgroundResource(R.mipmap.fingerprint);
+
+                    fingerprintInstructions = (TextView) findViewById(R.id.fingeprintInstructions);
+                    fingerprintInstructions.setText(R.string.fingerprint_instructions);
+                    fingerprintInstructions.setGravity(Gravity.CENTER);
+                    generateKey();
+                } catch (FingerprintException e) {
+                    e.printStackTrace();
+                }
+
+                if (initCipher()) {
+                    cryptoObject = new FingerprintManager.CryptoObject(cipher);
+                    FingerprintHandler helper = new FingerprintHandler(this);
+                    helper.startAuth(fingerprintManager, cryptoObject);
+                }
+            }
+        }
+
+
+        inputLayoutEmail = (TextInputLayout) findViewById(R.id.input_layout_email);
+        inputLayoutPassword = (TextInputLayout) findViewById(R.id.input_layout_password);
+
+        inputEmail = (EditText) findViewById(R.id.input_email);
+        inputPassword = (EditText) findViewById(R.id.input_password);
+
+        Button btnLogInActivity = (Button) findViewById(R.id.btnLogInActivity);
+
+        inputEmail.addTextChangedListener(new MyTextWatcher(inputEmail));
+        inputPassword.addTextChangedListener(new MyTextWatcher(inputPassword));
+
+        btnLogInActivity.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                submitForm();
+            }
+        });
+    }
+
+
+    private class MyTextWatcher implements TextWatcher {
+
+        private View view;
+
+        private MyTextWatcher(View view) {
+            this.view = view;
+        }
+
+        public void beforeTextChanged(CharSequence charSequence, int i, int i1, int i2) {
+        }
+
+        public void onTextChanged(CharSequence charSequence, int i, int i1, int i2) {
+        }
+
+        public void afterTextChanged(Editable editable) {
+            switch (view.getId()) {
+                case R.id.input_email:
+                    validateEmail();
+                    break;
+                case R.id.input_password:
+                    validatePassword();
+                    break;
+            }
+        }
+    }
+
+    private void submitForm() {
+        if(!validateEmail()) {
+            return;
+        }
+        if(!validatePassword()) {
+            return;
+        }
+        Toast.makeText(getApplicationContext(), "Login successful!", Toast.LENGTH_SHORT).show();
+    }
+
+    private static boolean isValidEmail(String email) {
+        return !TextUtils.isEmpty(email) && android.util.Patterns.EMAIL_ADDRESS.matcher(email).matches();
+    }
+
+    private void requestFocus(View view) {
+        if(view.requestFocus()) {
+            getWindow().setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_STATE_ALWAYS_VISIBLE);
+        }
+    }
+
+    private boolean validateEmail() {
+        String email = inputEmail.getText().toString().trim();
+
+        if(email.isEmpty() || !isValidEmail(email)) {
+            inputLayoutEmail.setError(getString(R.string.err_msg_email));
+            requestFocus(inputEmail);
+            return false;
+        } else {
+            inputLayoutEmail.setErrorEnabled(false);
+        }
+        return true;
+    }
+
+    private boolean validatePassword() {
+        if(inputPassword.getText().toString().trim().isEmpty()) {
+            inputLayoutPassword.setError(getString(R.string.err_msg_password));
+            requestFocus(inputPassword);
+            return false;
+        } else {
+            inputLayoutPassword.setErrorEnabled(false);
+        }
+        return true;
+    }
+
+    private void generateKey() throws FingerprintException {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+            try {
+                // Obtain a reference to the Keystore using the standard Android keystore container identifier (“AndroidKeystore”)//
+                keyStore = KeyStore.getInstance("AndroidKeyStore");
+
+                //Generate the key//
+                keyGenerator = KeyGenerator.getInstance(KeyProperties.KEY_ALGORITHM_AES, "AndroidKeyStore");
+
+                //Initialize an empty KeyStore//
+                keyStore.load(null);
+
+                //Initialize the KeyGenerator//
+                keyGenerator.init(new
+
+                        //Specify the operation(s) this key can be used for//
+                        KeyGenParameterSpec.Builder(KEY_NAME,
+                        KeyProperties.PURPOSE_ENCRYPT |
+                                KeyProperties.PURPOSE_DECRYPT)
+                        .setBlockModes(KeyProperties.BLOCK_MODE_CBC)
+
+                        //Configure this key so that the user has to confirm their identity with a fingerprint each time they want to use it//
+                        .setUserAuthenticationRequired(true)
+                        .setEncryptionPaddings(
+                                KeyProperties.ENCRYPTION_PADDING_PKCS7)
+                        .build());
+
+                //Generate the key//
+                keyGenerator.generateKey();
+
+            } catch (KeyStoreException
+                    | NoSuchAlgorithmException
+                    | NoSuchProviderException
+                    | InvalidAlgorithmParameterException
+                    | CertificateException
+                    | IOException exc) {
+                exc.printStackTrace();
+                throw new FingerprintException(exc);
+            }
+        }
+    }
+
+    @TargetApi(Build.VERSION_CODES.M)
+    public boolean initCipher() {
+            try {
+                //Obtain a cipher instance and configure it with the properties required for fingerprint authentication//
+                cipher = Cipher.getInstance(
+                        KeyProperties.KEY_ALGORITHM_AES + "/"
+                                + KeyProperties.BLOCK_MODE_CBC + "/"
+                                + KeyProperties.ENCRYPTION_PADDING_PKCS7);
+            } catch (NoSuchAlgorithmException |
+                    NoSuchPaddingException e) {
+                throw new RuntimeException("Failed to get Cipher", e);
+            }
+
+            try {
+                keyStore.load(null);
+                SecretKey key = (SecretKey) keyStore.getKey(KEY_NAME,
+                        null);
+                cipher.init(Cipher.ENCRYPT_MODE, key);
+                //Return true if the cipher has been initialized successfully//
+                return true;
+            } catch (KeyPermanentlyInvalidatedException e) {
+
+                //Return false if cipher initialization failed//
+                return false;
+            } catch (KeyStoreException | CertificateException
+                    | UnrecoverableKeyException | IOException
+                    | NoSuchAlgorithmException | InvalidKeyException e) {
+                throw new RuntimeException("Failed to init Cipher", e);
+            }
+    }
+
+            @Override
+    public void onBackPressed() {
+        super.onBackPressed();
+        Intent intent = new Intent(this, MainActivity.class);
+        startActivity(intent);
+        finish();
+    }
+
+    @Override
+    public boolean onSupportNavigateUp() {
+        onBackPressed();
+        return true;
+    }
+
+    private class FingerprintException extends Exception {
+        public FingerprintException(Exception e) {
+            super(e);
+        }
+    }
+}

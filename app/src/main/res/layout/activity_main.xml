@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    tools:context="com.example.osbg.pot.MainActivity">
+
+    <ImageView
+        android:id="@+id/potLogo"
+        android:src="@mipmap/pot_logo"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:layout_above="@id/createAccountButton"
+        />
+
+    <Button
+        android:id="@+id/createAccountButton"
+        android:layout_width="250dp"
+        android:layout_height="50dp"
+        android:text="CREATE NEW ACCOUNT"
+        android:textColor="@color/White"
+        android:layout_centerInParent="true"
+        android:background="@drawable/ripple"
+        android:stateListAnimator="@animator/my_animator"/>
+
+    <Button
+        android:id="@+id/logInButton"
+        android:layout_marginTop="10dp"
+        android:layout_width="250dp"
+        android:layout_height="50dp"
+        android:text="LOG IN"
+        android:textColor="@color/White"
+        android:background="@drawable/ripple_dark"
+        android:stateListAnimator="@animator/my_animator"
+        android:layout_below="@id/createAccountButton"
+        android:layout_alignStart="@id/createAccountButton"/>
+
+</RelativeLayout>
