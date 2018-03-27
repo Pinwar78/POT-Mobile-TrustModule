@@ -9,12 +9,12 @@
     <ImageView
         android:id="@+id/potLogo"
         android:src="@mipmap/pot_logo"
-        android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:layout_above="@id/createAccountButton"
-        />
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_centerInParent="true"/>
+        <!--android:layout_above="@id/createAccountButton"-->
 
-    <Button
+    <!--<Button
         android:id="@+id/createAccountButton"
         android:layout_width="250dp"
         android:layout_height="50dp"
@@ -22,7 +22,7 @@
         android:textColor="@color/White"
         android:layout_centerInParent="true"
         android:background="@drawable/ripple"
-        android:stateListAnimator="@animator/my_animator"/>
+        android:stateListAnimator="@animator/my_animator"/>-->
 
     <Button
         android:id="@+id/logInButton"
@@ -33,7 +33,7 @@
         android:textColor="@color/White"
         android:background="@drawable/ripple_dark"
         android:stateListAnimator="@animator/my_animator"
-        android:layout_below="@id/createAccountButton"
-        android:layout_alignStart="@id/createAccountButton"/>
+        android:layout_below="@id/potLogo"
+        android:layout_centerHorizontal="true"/>
 
 </RelativeLayout>

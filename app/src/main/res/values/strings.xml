@@ -4,8 +4,14 @@
     <string name="hint_email">Email</string>
     <string name="hint_password">Password</string>
     <string name="btn_sign_up">LOG IN</string>
+    <string name="btn_savepassword">SAVE PASSWORD</string>
     <string name="err_msg_name">Enter your full name.</string>
     <string name="err_msg_email">Enter valid email address.</string>
     <string name="err_msg_password">Enter password.</string>
+    <string name="err_msg_wrong_password">Wrong password !</string>
     <string name="fingerprint_instructions">Or place your fingertip on the Fingerprint sensor to verify your identity.</string>
+    <string name="title_location_permission">Location permission</string>
+    <string name="text_location_permission">Please allow location access on your device.</string>
+    <string name="ok_button">OK</string>
+    <string name="notification_name">Location changed!</string>
 </resources>

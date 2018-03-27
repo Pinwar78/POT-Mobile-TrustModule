@@ -9,6 +9,10 @@ import android.os.CancellationSignal;
 import android.support.v4.app.ActivityCompat;
 import android.widget.Toast;
 
+/**
+ * FingerprintHandler class that helps to recognize the fingerprints
+ */
+
 @TargetApi(Build.VERSION_CODES.M)
 public class FingerprintHandler extends FingerprintManager.AuthenticationCallback {
 
@@ -63,8 +67,7 @@ public class FingerprintHandler extends FingerprintManager.AuthenticationCallbac
     //onAuthenticationSucceeded is called when a fingerprint has been successfully matched to one of the fingerprints stored on the user’s device//
     public void onAuthenticationSucceeded(
             FingerprintManager.AuthenticationResult result) {
-
-        Toast.makeText(context, "Success!", Toast.LENGTH_LONG).show();
+        LogInActivity.changeLoginBtnSuccess();
     }
 
 }

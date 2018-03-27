@@ -2,10 +2,9 @@ package com.example.osbg.pot;
 
 import android.Manifest;
 import android.annotation.TargetApi;
-import android.app.Activity;
 import android.app.KeyguardManager;
-import android.content.Context;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
 import android.hardware.fingerprint.FingerprintManager;
 import android.os.Build;
@@ -14,13 +13,13 @@ import android.security.keystore.KeyPermanentlyInvalidatedException;
 import android.security.keystore.KeyProperties;
 import android.support.design.widget.TextInputLayout;
 import android.support.v4.app.ActivityCompat;
-import android.support.v4.hardware.fingerprint.FingerprintManagerCompat;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.support.v7.widget.Toolbar;
 import android.text.Editable;
 import android.text.TextUtils;
 import android.text.TextWatcher;
+import android.util.Log;
 import android.view.Gravity;
 import android.view.View;
 import android.view.WindowManager;
@@ -45,31 +44,10 @@ import javax.crypto.KeyGenerator;
 import javax.crypto.NoSuchPaddingException;
 import javax.crypto.SecretKey;
 
-import android.app.KeyguardManager;
-import android.content.pm.PackageManager;
-import android.hardware.fingerprint.FingerprintManager;
-import android.Manifest;
-import android.os.Build;
-import android.os.Bundle;
-import android.security.keystore.KeyGenParameterSpec;
-import android.security.keystore.KeyPermanentlyInvalidatedException;
-import android.security.keystore.KeyProperties;
-import android.support.v7.app.AppCompatActivity;
-import android.support.v4.app.ActivityCompat;
-import android.widget.TextView;
-import java.io.IOException;
-import java.security.InvalidAlgorithmParameterException;
-import java.security.InvalidKeyException;
-import java.security.KeyStore;
-import java.security.KeyStoreException;
-import java.security.NoSuchAlgorithmException;
-import java.security.NoSuchProviderException;
-import java.security.UnrecoverableKeyException;
-import java.security.cert.CertificateException;
-import javax.crypto.Cipher;
-import javax.crypto.KeyGenerator;
-import javax.crypto.NoSuchPaddingException;
-import javax.crypto.SecretKey;
+/**
+ * LogInActivity class - Activity that helps the user to prove his/her identity with a password OR
+ * a Fingerprint, if the device supports this function !
+ */
 
 public class LogInActivity extends AppCompatActivity {
 
@@ -77,15 +55,19 @@ public class LogInActivity extends AppCompatActivity {
     private TextInputLayout inputLayoutEmail, inputLayoutPassword;
     private TextView fingerprintInstructions, fingerprintSetupInstructions;
     private ImageView fingerprintImage;
+    public static Button btnLogInActivity;
 
     private static final String KEY_NAME = "yourKey";
     private Cipher cipher;
     private KeyStore keyStore;
     private KeyGenerator keyGenerator;
-    private TextView textView;
     private FingerprintManager.CryptoObject cryptoObject;
     private FingerprintManager fingerprintManager;
     private KeyguardManager keyguardManager;
+
+    private final String PREFERENCES_NAME = "Password"; //file name
+    private final String MY_PASSWORD = "mypassword"; //key name
+    private SharedPreferences passwordPreferences;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -163,15 +145,15 @@ public class LogInActivity extends AppCompatActivity {
         }
 
 
-        inputLayoutEmail = (TextInputLayout) findViewById(R.id.input_layout_email);
+        //inputLayoutEmail = (TextInputLayout) findViewById(R.id.input_layout_email);
         inputLayoutPassword = (TextInputLayout) findViewById(R.id.input_layout_password);
 
-        inputEmail = (EditText) findViewById(R.id.input_email);
+        //inputEmail = (EditText) findViewById(R.id.input_email);
         inputPassword = (EditText) findViewById(R.id.input_password);
 
-        Button btnLogInActivity = (Button) findViewById(R.id.btnLogInActivity);
+        btnLogInActivity = (Button) findViewById(R.id.btnLogInActivity);
 
-        inputEmail.addTextChangedListener(new MyTextWatcher(inputEmail));
+        //inputEmail.addTextChangedListener(new MyTextWatcher(inputEmail));
         inputPassword.addTextChangedListener(new MyTextWatcher(inputPassword));
 
         btnLogInActivity.setOnClickListener(new View.OnClickListener() {
@@ -199,9 +181,9 @@ public class LogInActivity extends AppCompatActivity {
 
         public void afterTextChanged(Editable editable) {
             switch (view.getId()) {
-                case R.id.input_email:
+                /*case R.id.input_email:
                     validateEmail();
-                    break;
+                    break;*/
                 case R.id.input_password:
                     validatePassword();
                     break;
@@ -210,17 +192,26 @@ public class LogInActivity extends AppCompatActivity {
     }
 
     private void submitForm() {
-        if(!validateEmail()) {
+        /*if(!validateEmail()) {
             return;
+        }*/
+
+        if(validatePassword() && isPasswordRight()) {
+            changeLoginBtnSuccess();
+            Toast.makeText(getApplicationContext(), "Login successful!", Toast.LENGTH_SHORT).show();
+
         }
-        if(!validatePassword()) {
-            return;
-        }
-        Toast.makeText(getApplicationContext(), "Login successful!", Toast.LENGTH_SHORT).show();
     }
 
     private static boolean isValidEmail(String email) {
         return !TextUtils.isEmpty(email) && android.util.Patterns.EMAIL_ADDRESS.matcher(email).matches();
+    }
+
+    public static void changeLoginBtnSuccess() {
+        btnLogInActivity.setEnabled(false);
+        btnLogInActivity.setAlpha(.5f);
+        btnLogInActivity.setText("SUCCESS !");
+        btnLogInActivity.setBackgroundColor(btnLogInActivity.getContext().getResources().getColor(R.color.LightGreen));
     }
 
     private void requestFocus(View view) {
@@ -229,7 +220,7 @@ public class LogInActivity extends AppCompatActivity {
         }
     }
 
-    private boolean validateEmail() {
+    /*private boolean validateEmail() {
         String email = inputEmail.getText().toString().trim();
 
         if(email.isEmpty() || !isValidEmail(email)) {
@@ -240,11 +231,28 @@ public class LogInActivity extends AppCompatActivity {
             inputLayoutEmail.setErrorEnabled(false);
         }
         return true;
-    }
+    }*/
 
     private boolean validatePassword() {
         if(inputPassword.getText().toString().trim().isEmpty()) {
             inputLayoutPassword.setError(getString(R.string.err_msg_password));
+            requestFocus(inputPassword);
+            return false;
+        } else {
+            inputLayoutPassword.setErrorEnabled(false);
+        }
+        return true;
+    }
+
+    private boolean isPasswordRight() {
+        HashCalculator hashCalculator = new HashCalculator();
+        String inputPasswordHash = hashCalculator.calculateHash(inputPassword.getText().toString());
+
+        passwordPreferences = getApplicationContext().getSharedPreferences(PREFERENCES_NAME, 0);
+        String passwordValue = passwordPreferences.getString(MY_PASSWORD, null);
+
+        if(!inputPasswordHash.equals(passwordValue)) {
+            inputLayoutPassword.setError(getString(R.string.err_msg_wrong_password));
             requestFocus(inputPassword);
             return false;
         } else {

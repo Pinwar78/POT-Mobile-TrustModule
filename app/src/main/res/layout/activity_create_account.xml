@@ -25,4 +25,36 @@
             style="@style/TextAppearance.Widget.AppCompat.Toolbar.Title"/>
     </RelativeLayout>
     </android.support.v7.widget.Toolbar>
+
+    <LinearLayout
+        android:layout_width="fill_parent"
+        android:layout_height="match_parent"
+        android:layout_marginTop="?attr/actionBarSize"
+        android:orientation="vertical"
+        android:paddingLeft="20dp"
+        android:paddingRight="20dp"
+        android:paddingTop="60dp">
+
+    <android.support.design.widget.TextInputLayout
+        android:id="@+id/input_create_password_layout"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content">
+
+        <EditText
+            android:id="@+id/input_create_password"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:inputType="textPassword"
+            android:hint="@string/hint_password" />
+    </android.support.design.widget.TextInputLayout>
+
+    <Button android:id="@+id/btnSavePassword"
+        android:layout_width="fill_parent"
+        android:layout_height="wrap_content"
+        android:text="@string/btn_savepassword"
+        android:background="@drawable/ripple"
+        android:stateListAnimator="@animator/my_animator"
+        android:layout_marginTop="40dp"
+        android:textColor="@android:color/white"/>
+    </LinearLayout>
 </android.support.constraint.ConstraintLayout>
