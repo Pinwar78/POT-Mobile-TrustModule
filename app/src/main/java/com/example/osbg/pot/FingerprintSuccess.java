@@ -1,7 +1,7 @@
 package com.example.osbg.pot;
 
 /**
- * Created by osbg on 4/3/18.
+ * Interface for interaction between the Fingerprint class and the LoginActivity.
  */
 
 public interface FingerprintSuccess {
