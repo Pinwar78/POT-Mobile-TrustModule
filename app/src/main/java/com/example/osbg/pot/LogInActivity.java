@@ -8,6 +8,7 @@ import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
 import android.hardware.fingerprint.FingerprintManager;
 import android.os.Build;
+import android.os.Handler;
 import android.security.keystore.KeyGenParameterSpec;
 import android.security.keystore.KeyPermanentlyInvalidatedException;
 import android.security.keystore.KeyProperties;
@@ -19,7 +20,6 @@ import android.support.v7.widget.Toolbar;
 import android.text.Editable;
 import android.text.TextUtils;
 import android.text.TextWatcher;
-import android.util.Log;
 import android.view.Gravity;
 import android.view.View;
 import android.view.WindowManager;
@@ -49,13 +49,13 @@ import javax.crypto.SecretKey;
  * a Fingerprint, if the device supports this function !
  */
 
-public class LogInActivity extends AppCompatActivity {
+public class LogInActivity extends AppCompatActivity implements FingerprintSuccess{
 
     private EditText inputEmail, inputPassword;
     private TextInputLayout inputLayoutEmail, inputLayoutPassword;
-    private TextView fingerprintInstructions, fingerprintSetupInstructions;
+    private TextView fingerprintInstructions;
     private ImageView fingerprintImage;
-    public static Button btnLogInActivity;
+    private Button btnLogInActivity;
 
     private static final String KEY_NAME = "yourKey";
     private Cipher cipher;
@@ -68,6 +68,8 @@ public class LogInActivity extends AppCompatActivity {
     private final String PREFERENCES_NAME = "Password"; //file name
     private final String MY_PASSWORD = "mypassword"; //key name
     private SharedPreferences passwordPreferences;
+    private SharedPreferences sharedPreferences;
+    private SharedPreferences.Editor editor;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -164,6 +166,20 @@ public class LogInActivity extends AppCompatActivity {
         });
     }
 
+    @Override
+    public void onSuccess() {
+        changeLoginBtnSuccess();
+        changeLoginStatus();
+
+        Handler handler = new Handler();
+        handler.postDelayed(new Runnable() {
+            @Override
+            public void run() {
+                finish();
+            }
+        }, 300);
+    }
+
 
     private class MyTextWatcher implements TextWatcher {
 
@@ -195,23 +211,28 @@ public class LogInActivity extends AppCompatActivity {
         /*if(!validateEmail()) {
             return;
         }*/
-
         if(validatePassword() && isPasswordRight()) {
-            changeLoginBtnSuccess();
+            onSuccess();
             Toast.makeText(getApplicationContext(), "Login successful!", Toast.LENGTH_SHORT).show();
-
         }
     }
 
-    private static boolean isValidEmail(String email) {
+    /*private static boolean isValidEmail(String email) {
         return !TextUtils.isEmpty(email) && android.util.Patterns.EMAIL_ADDRESS.matcher(email).matches();
-    }
+    }*/
 
-    public static void changeLoginBtnSuccess() {
+    public void changeLoginBtnSuccess() {
         btnLogInActivity.setEnabled(false);
         btnLogInActivity.setAlpha(.5f);
         btnLogInActivity.setText("SUCCESS !");
         btnLogInActivity.setBackgroundColor(btnLogInActivity.getContext().getResources().getColor(R.color.LightGreen));
+    }
+
+    public void changeLoginStatus() {
+        sharedPreferences = getApplicationContext().getSharedPreferences(MainActivity.IS_LOGGEDIN, 0);
+        editor = sharedPreferences.edit();
+        editor.putBoolean(MainActivity.IS_LOGGEDIN, true);
+        editor.apply();
     }
 
     private void requestFocus(View view) {

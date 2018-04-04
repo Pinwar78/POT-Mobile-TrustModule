@@ -1,21 +1,15 @@
 package com.example.osbg.pot;
 
-import android.Manifest;
 import android.app.IntentService;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
-import android.content.SharedPreferences;
-import android.content.pm.PackageManager;
 import android.net.wifi.WifiManager;
 import android.os.Build;
 import android.os.Handler;
 import android.support.annotation.Nullable;
-import android.support.v4.app.ActivityCompat;
 import android.telephony.TelephonyManager;
-import android.telephony.gsm.GsmCellLocation;
 import android.util.Log;
-import android.widget.Toast;
 
 import com.android.volley.AuthFailureError;
 import com.android.volley.Request;
@@ -29,7 +23,6 @@ import com.android.volley.toolbox.Volley;
 import org.json.JSONException;
 import org.json.JSONObject;
 
-import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -80,9 +73,10 @@ public class LocationService extends IntentService {
                 cellReceiver.saveCellID();
 
                 try {
+                    TelephonyManager telephonyManager = (TelephonyManager) getApplicationContext().getSystemService(Context.TELEPHONY_SERVICE);
                     new_locationJSON.put("cell", CellReceiver.myCellJSON);
                     new_locationJSON.put("wifi", WifiReceiver.myWIFIJSON);
-                    new_locationJSON.put("device", (Build.MANUFACTURER + " " + Build.PRODUCT + " " + Build.VERSION.RELEASE));
+                    new_locationJSON.put("device", (Build.MANUFACTURER + " " + Build.PRODUCT + " " + Build.VERSION.RELEASE + " " + telephonyManager.getNetworkOperatorName()));
                 } catch (JSONException e) {
                     e.printStackTrace();
                 }

@@ -14,4 +14,7 @@
     <string name="text_location_permission">Please allow location access on your device.</string>
     <string name="ok_button">OK</string>
     <string name="notification_name">Location changed!</string>
+    <string name="first_login"><i>Please login to Process of Things for first time by clicking the <b>LOG IN</b> button below</i></string>
+    <string name="trust_text">Process of Things builds Trust and keeps you safe in an insecure world, powered by the Blockchain technology!</string>
+    <string name="pot_site"><i>Click HERE to learn more</i></string>
 </resources>

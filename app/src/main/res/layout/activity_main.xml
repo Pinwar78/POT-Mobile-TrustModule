@@ -11,7 +11,7 @@
         android:src="@mipmap/pot_logo"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_centerInParent="true"/>
+        android:layout_alignParentStart="true"/>
         <!--android:layout_above="@id/createAccountButton"-->
 
     <!--<Button
@@ -23,17 +23,46 @@
         android:layout_centerInParent="true"
         android:background="@drawable/ripple"
         android:stateListAnimator="@animator/my_animator"/>-->
+    <TextView
+        android:id="@+id/firstLogin"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_below="@id/potLogo"
+        android:layout_centerHorizontal="true"
+        android:gravity="center"
+        android:text="@string/first_login"
+        android:textSize="20sp"
+        android:visibility="gone"/>
+    <TextView
+        android:id="@+id/trustText"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_below="@id/potLogo"
+        android:layout_centerHorizontal="true"
+        android:gravity="center"
+        android:text="@string/trust_text"
+        android:textSize="20sp"
+        android:visibility="invisible"/>
 
     <Button
         android:id="@+id/logInButton"
         android:layout_marginTop="10dp"
         android:layout_width="250dp"
         android:layout_height="50dp"
-        android:text="LOG IN"
         android:textColor="@color/White"
         android:background="@drawable/ripple_dark"
         android:stateListAnimator="@animator/my_animator"
-        android:layout_below="@id/potLogo"
+        android:layout_below="@id/trustText"
         android:layout_centerHorizontal="true"/>
+
+    <TextView
+        android:id="@+id/pot_site"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:textColor="@color/colorPrimaryDark"
+        android:layout_alignParentBottom="true"
+        android:layout_centerHorizontal="true"
+        android:text="@string/pot_site"
+        android:layout_marginBottom="20sp"/>
 
 </RelativeLayout>

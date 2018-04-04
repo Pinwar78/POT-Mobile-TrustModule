@@ -1,12 +1,14 @@
 package com.example.osbg.pot;
 import android.annotation.TargetApi;
 import android.content.Context;
+import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.hardware.fingerprint.FingerprintManager;
 import android.Manifest;
 import android.os.Build;
 import android.os.CancellationSignal;
 import android.support.v4.app.ActivityCompat;
+import android.widget.Button;
 import android.widget.Toast;
 
 /**
@@ -22,8 +24,15 @@ public class FingerprintHandler extends FingerprintManager.AuthenticationCallbac
     private CancellationSignal cancellationSignal;
     private Context context;
 
+    private FingerprintSuccess mSuccess;
+
     public FingerprintHandler(Context mContext) {
         context = mContext;
+        if(mContext instanceof FingerprintSuccess) {
+            this.mSuccess = (FingerprintSuccess) mContext;
+        }else{
+            throw new ClassCastException("FingerprintHandler: context must implement FingerprintSuccess!");
+        }
     }
 
     //Implement the startAuth method, which is responsible for starting the fingerprint authentication process//
@@ -67,7 +76,12 @@ public class FingerprintHandler extends FingerprintManager.AuthenticationCallbac
     //onAuthenticationSucceeded is called when a fingerprint has been successfully matched to one of the fingerprints stored on the user’s device//
     public void onAuthenticationSucceeded(
             FingerprintManager.AuthenticationResult result) {
-        LogInActivity.changeLoginBtnSuccess();
+        if(mSuccess != null) {
+        }
+        try {
+            mSuccess.onSuccess();
+        }catch (Exception e) {
+            e.printStackTrace();
+        }
     }
-
 }
