@@ -130,7 +130,7 @@ public class LocationService extends IntentService {
 
     public void postJSONObject() {
         RequestQueue queue = Volley.newRequestQueue(getApplicationContext());
-        final String url = "http://bpetrov.processofthings.io:9070/node/trust";
+        final String url = "http://trusttest.processofthings.io:9070/node/trust";
         Log.d("sentjson", new_locationJSON.toString());
         JsonObjectRequest jsonObjectRequest = new JsonObjectRequest(Request.Method.POST, url, new_locationJSON, new Response.Listener<JSONObject>() {
             @Override

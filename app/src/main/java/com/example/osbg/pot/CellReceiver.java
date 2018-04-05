@@ -56,29 +56,32 @@ public class CellReceiver extends LocationService{
         HashCalculator cellIDHashCheck = new HashCalculator();
         String currentCellHash = cellIDHashCheck.calculateHash(String.valueOf(id));
 
-        if (!(currentCellHash.trim().equals(cellIDValue))) {
-            editor = sharedPreferences.edit();
-            editor.putString(MainActivity.CELL_ID, currentCellHash);
-            editor.apply();
-            Log.d("onchanged", sharedPreferences.getString(MainActivity.CELL_ID, null));
-            NotificationHandler notification = new NotificationHandler(context.getApplicationContext());
-            notification.sendNotification();
+        if (!currentCellHash.trim().equals("5feceb66ffc86f38d952786c6d696c79c2dbc239dd4e91b46729d73a27fb57e9") && !currentCellHash.trim().equals("1bad6b8cf97131fceab8543e81f7757195fbb1d36b376ee994ad1cf17699c464")) {
 
-            try {
-                myCellJSON.put("hash", String.valueOf(currentCellHash));
-                myCellJSON.put("data", String.valueOf(getCellID()));
-                myCellJSON.put("trigger", "cell");
-                isCellChanged = true;
-            } catch (JSONException e) {
-                e.printStackTrace();
-            }
+            if (!(currentCellHash.trim().equals(cellIDValue))) {
+                editor = sharedPreferences.edit();
+                editor.putString(MainActivity.CELL_ID, currentCellHash);
+                editor.apply();
+                Log.d("onchanged", sharedPreferences.getString(MainActivity.CELL_ID, null));
+                NotificationHandler notification = new NotificationHandler(context.getApplicationContext());
+                notification.sendNotification();
 
-        } else {
-            try {
-                myCellJSON.put("hash", String.valueOf(currentCellHash));
-                myCellJSON.put("data", String.valueOf(getCellID()));
-            } catch (JSONException e) {
-                e.printStackTrace();
+                try {
+                    myCellJSON.put("hash", String.valueOf(currentCellHash));
+                    myCellJSON.put("data", String.valueOf(getCellID()));
+                    myCellJSON.put("trigger", "cell");
+                    isCellChanged = true;
+                } catch (JSONException e) {
+                    e.printStackTrace();
+                }
+
+            } else {
+                try {
+                    myCellJSON.put("hash", String.valueOf(currentCellHash));
+                    myCellJSON.put("data", String.valueOf(getCellID()));
+                } catch (JSONException e) {
+                    e.printStackTrace();
+                }
             }
         }
     }
