@@ -31,6 +31,7 @@ public class MainActivity extends AppCompatActivity {
     public static final String EXCEL_WIFI = "excelwifi";
     public static final String GOOD_WIFI = "goodwifi";
     public static final String IS_LOGGEDIN = "login";
+    public static final String UUID = "uuid";
     private SharedPreferences sharedPreferences;
     private SharedPreferences.Editor editor;
 

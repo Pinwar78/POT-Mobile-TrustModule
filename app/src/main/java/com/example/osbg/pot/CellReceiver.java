@@ -63,8 +63,8 @@ public class CellReceiver extends LocationService{
                 editor.putString(MainActivity.CELL_ID, currentCellHash);
                 editor.apply();
                 Log.d("onchanged", sharedPreferences.getString(MainActivity.CELL_ID, null));
-                NotificationHandler notification = new NotificationHandler(context.getApplicationContext());
-                notification.sendNotification();
+                /*NotificationHandler notification = new NotificationHandler(context.getApplicationContext());
+                notification.sendNotification();*/
 
                 try {
                     myCellJSON.put("hash", String.valueOf(currentCellHash));

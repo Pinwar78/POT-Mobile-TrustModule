@@ -20,11 +20,17 @@ public class NotificationHandler extends android.app.Notification{
     private Context context;
     private SharedPreferences cellIDPreferences;
 
+    private String subject = "";
+    private String message = "";
+
     public NotificationHandler(Context c) {
         this.context = c;
     }
 
-    public void sendNotification() {
+    public void sendNotification(String mySubject, String myMessage) {
+
+        this.subject = mySubject;
+        this.message = myMessage;
 
         cellIDPreferences = context.getSharedPreferences(MainActivity.PREFERENCES_NAME, 0);
         String cellIDValue = cellIDPreferences.getString(MainActivity.CELL_ID, null);
@@ -44,15 +50,15 @@ public class NotificationHandler extends android.app.Notification{
 
 
         //Here is a block of code that helps to do something when the user click on the notification
-        Intent notificationIntent = new Intent(context, LogInActivity.class);
+        Intent notificationIntent = new Intent(context, MainActivity.class);
         notificationIntent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_SINGLE_TOP);
 
         PendingIntent pendingIntent = TaskStackBuilder.create(context).addNextIntent(notificationIntent).getPendingIntent(0, PendingIntent.FLAG_UPDATE_CURRENT);
 
         NotificationCompat.Builder mBuilder = new NotificationCompat.Builder(this.context, "default")
                 .setSmallIcon(R.mipmap.ic_place_black_24dp)
-                .setContentTitle("Location changed!")
-                .setContentText("CellID: " + cellIDValue)
+                .setContentTitle(subject)
+                .setContentText(message)
                 .setOngoing(true)
                 .setContentIntent(pendingIntent);
 

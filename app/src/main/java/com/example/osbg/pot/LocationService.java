@@ -4,6 +4,7 @@ import android.app.IntentService;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
+import android.content.SharedPreferences;
 import android.net.wifi.WifiManager;
 import android.os.Build;
 import android.os.Handler;
@@ -41,6 +42,9 @@ public class LocationService extends IntentService {
     private JSONObject cellJSON = new JSONObject();
     private JSONObject new_locationJSON = new JSONObject();
 
+    private SharedPreferences sharedPreferences;
+    private SharedPreferences.Editor editor;
+
     public LocationService() {
         super("LocationService");
     }
@@ -75,12 +79,17 @@ public class LocationService extends IntentService {
 
                 TelephonyManager telephonyManager = (TelephonyManager) getApplicationContext().getSystemService(Context.TELEPHONY_SERVICE);
 
+                sharedPreferences = getApplicationContext().getSharedPreferences(MainActivity.PREFERENCES_NAME, 0);
+
                 if(CellReceiver.isCellChanged && WifiReceiver.isWifiChanged) {
                     new_locationJSON = new JSONObject();
                     try {
                         new_locationJSON.put("cell", cellJSON);
                         new_locationJSON.put("wifi", WifiReceiver.myWIFIJSON);
                         new_locationJSON.put("device", (Build.MANUFACTURER + " " + Build.PRODUCT + " " + Build.VERSION.RELEASE + " " + telephonyManager.getNetworkOperatorName()));
+                        if(sharedPreferences.contains("uuid")){
+                            new_locationJSON.put("uuid", sharedPreferences.getString(MainActivity.UUID, null));
+                        }
                         postJSONObject();
                         CellReceiver.isCellChanged = false;
                         WifiReceiver.isWifiChanged = false;
@@ -95,6 +104,9 @@ public class LocationService extends IntentService {
                         new_locationJSON.put("cell", cellJSON);
                         new_locationJSON.put("wifi", WifiReceiver.myWIFIJSON);
                         new_locationJSON.put("device", (Build.MANUFACTURER + " " + Build.PRODUCT + " " + Build.VERSION.RELEASE + " " + telephonyManager.getNetworkOperatorName()));
+                        if(sharedPreferences.contains("uuid")){
+                            new_locationJSON.put("uuid", sharedPreferences.getString(MainActivity.UUID, null));
+                        }
                         postJSONObject();
                         CellReceiver.isCellChanged = false;
                     } catch (JSONException e) {
@@ -107,6 +119,9 @@ public class LocationService extends IntentService {
                             new_locationJSON.put("cell", cellJSON);
                             new_locationJSON.put("wifi", WifiReceiver.myWIFIJSON);
                             new_locationJSON.put("device", (Build.MANUFACTURER + " " + Build.PRODUCT + " " + Build.VERSION.RELEASE + " " + telephonyManager.getNetworkOperatorName()));
+                            if(sharedPreferences.contains("uuid")){
+                                new_locationJSON.put("uuid", sharedPreferences.getString(MainActivity.UUID, null));
+                            }
                             postJSONObject();
                             WifiReceiver.isWifiChanged = false;
                         } catch (JSONException e) {
@@ -136,6 +151,26 @@ public class LocationService extends IntentService {
             @Override
             public void onResponse(JSONObject response) {
                 Log.d("serverresponse", response.toString());
+                NotificationHandler notification = new NotificationHandler(getApplicationContext());
+                if (response.has("notification")) {
+                    try {
+                        String subject = response.getJSONObject("notification").getString("subject");
+                        String message = response.getJSONObject("notification").getString("message");
+                        String uuid = response.getString("uuid");
+
+                        sharedPreferences = getApplicationContext().getSharedPreferences(MainActivity.PREFERENCES_NAME, 0);
+                        editor = sharedPreferences.edit();
+                        editor.putString(MainActivity.UUID, uuid);
+                        editor.apply();
+
+                        notification.sendNotification(subject, message);
+                    } catch (JSONException e) {
+                        e.printStackTrace();
+                    }
+                }
+                if(response.has("uuid")) {
+                    //do nothing...
+                }
             }
         }, new Response.ErrorListener() {
             @Override
