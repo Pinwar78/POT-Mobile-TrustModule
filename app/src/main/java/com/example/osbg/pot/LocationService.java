@@ -38,7 +38,7 @@ public class LocationService extends IntentService {
     private WifiManager mWifiManager;
     private WifiReceiver mWifiScanReceiver;
 
-    private JSONObject old_locationJSON = new JSONObject();
+    private JSONObject cellJSON = new JSONObject();
     private JSONObject new_locationJSON = new JSONObject();
 
     public LocationService() {
@@ -71,29 +71,52 @@ public class LocationService extends IntentService {
 
                 CellReceiver cellReceiver = new CellReceiver(getApplicationContext());
                 cellReceiver.saveCellID();
+                cellJSON = cellReceiver.myCellJSON;
 
-                try {
-                    TelephonyManager telephonyManager = (TelephonyManager) getApplicationContext().getSystemService(Context.TELEPHONY_SERVICE);
-                    new_locationJSON.put("cell", CellReceiver.myCellJSON);
-                    new_locationJSON.put("wifi", WifiReceiver.myWIFIJSON);
-                    new_locationJSON.put("device", (Build.MANUFACTURER + " " + Build.PRODUCT + " " + Build.VERSION.RELEASE + " " + telephonyManager.getNetworkOperatorName()));
-                } catch (JSONException e) {
-                    e.printStackTrace();
+                TelephonyManager telephonyManager = (TelephonyManager) getApplicationContext().getSystemService(Context.TELEPHONY_SERVICE);
+
+                if(CellReceiver.isCellChanged && WifiReceiver.isWifiChanged) {
+                    new_locationJSON = new JSONObject();
+                    try {
+                        new_locationJSON.put("cell", cellJSON);
+                        new_locationJSON.put("wifi", WifiReceiver.myWIFIJSON);
+                        new_locationJSON.put("device", (Build.MANUFACTURER + " " + Build.PRODUCT + " " + Build.VERSION.RELEASE + " " + telephonyManager.getNetworkOperatorName()));
+                        postJSONObject();
+                        CellReceiver.isCellChanged = false;
+                        WifiReceiver.isWifiChanged = false;
+                    } catch (JSONException e) {
+                        e.printStackTrace();
+                    }
                 }
 
-                Log.d("totalJSON", old_locationJSON.toString());
-                Log.d("totalJSON", new_locationJSON.toString());
-
-                if(!(old_locationJSON.equals(new_locationJSON))) {
-                    old_locationJSON = new_locationJSON;
-                    if(old_locationJSON != null) {
+                else if(CellReceiver.isCellChanged) {
+                    new_locationJSON = new JSONObject();
+                    try {
+                        new_locationJSON.put("cell", cellJSON);
+                        new_locationJSON.put("wifi", WifiReceiver.myWIFIJSON);
+                        new_locationJSON.put("device", (Build.MANUFACTURER + " " + Build.PRODUCT + " " + Build.VERSION.RELEASE + " " + telephonyManager.getNetworkOperatorName()));
                         postJSONObject();
+                        CellReceiver.isCellChanged = false;
+                    } catch (JSONException e) {
+                        e.printStackTrace();
                     }
+                }
+                    else if(WifiReceiver.isWifiChanged) {
+                        new_locationJSON = new JSONObject();
+                        try {
+                            new_locationJSON.put("cell", cellJSON);
+                            new_locationJSON.put("wifi", WifiReceiver.myWIFIJSON);
+                            new_locationJSON.put("device", (Build.MANUFACTURER + " " + Build.PRODUCT + " " + Build.VERSION.RELEASE + " " + telephonyManager.getNetworkOperatorName()));
+                            postJSONObject();
+                            WifiReceiver.isWifiChanged = false;
+                        } catch (JSONException e) {
+                            e.printStackTrace();
+                        }
                 }
 
                 doInback();
             }
-        }, 5000);
+        }, 3000);
 
     }
 
@@ -105,10 +128,11 @@ public class LocationService extends IntentService {
         super.onDestroy();
     }
 
-    private void postJSONObject() {
+    public void postJSONObject() {
         RequestQueue queue = Volley.newRequestQueue(getApplicationContext());
-        final String url = "potserver.com";
-        JsonObjectRequest jsonObjectRequest = new JsonObjectRequest(Request.Method.POST, url, old_locationJSON, new Response.Listener<JSONObject>() {
+        final String url = "http://bpetrov.processofthings.io:9070/node/trust";
+        Log.d("sentjson", new_locationJSON.toString());
+        JsonObjectRequest jsonObjectRequest = new JsonObjectRequest(Request.Method.POST, url, new_locationJSON, new Response.Listener<JSONObject>() {
             @Override
             public void onResponse(JSONObject response) {
                 Log.d("serverresponse", response.toString());

@@ -5,9 +5,7 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.net.wifi.ScanResult;
-import android.net.wifi.WifiInfo;
 import android.net.wifi.WifiManager;
-import android.util.Log;
 
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -15,8 +13,6 @@ import org.json.JSONObject;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
-
-import static android.content.Context.WIFI_SERVICE;
 
 /**
  * WifiReceiver class that receives WIFI networks and sorts them into categories according to their
@@ -32,12 +28,17 @@ public class WifiReceiver extends BroadcastReceiver {
 
     private ArrayList<String> excellent_wifis = new ArrayList<String>();
     private ArrayList<String> good_wifis = new ArrayList<String>();
-    public static ArrayList<String> fair_wifis = new ArrayList<String>();
-    public static ArrayList<String> poor_wifis = new ArrayList<String>();
+    private ArrayList<String> fair_wifis = new ArrayList<String>();
+    private ArrayList<String> poor_wifis = new ArrayList<String>();
+
+    private JSONObject excellentJSONWifi = new JSONObject();
+    private JSONObject goodJSONWifi = new JSONObject();
     public static JSONObject myWIFIJSON = new JSONObject();
 
-    public static String excelWifisHash = "";
-    public static String goodWifisHash = "";
+    private String excelWifisHash = "";
+    private String goodWifisHash = "";
+
+    public static boolean isWifiChanged = false;
 
     @Override
     public void onReceive(Context c, Intent intent) {
@@ -68,6 +69,7 @@ public class WifiReceiver extends BroadcastReceiver {
 
             Collections.sort(excellent_wifis);
             Collections.sort(good_wifis);
+
             HashCalculator hashCalculator = new HashCalculator();
             sharedPreferences = c.getSharedPreferences(MainActivity.PREFERENCES_NAME, 0);
 
@@ -78,6 +80,7 @@ public class WifiReceiver extends BroadcastReceiver {
                     editor = sharedPreferences.edit();
                     editor.putString(MainActivity.EXCEL_WIFI, excelWifisHash);
                     editor.apply();
+                    isWifiChanged = true;
                 }
             }
             if(!(good_wifis.isEmpty())) {
@@ -87,11 +90,10 @@ public class WifiReceiver extends BroadcastReceiver {
                     editor = sharedPreferences.edit();
                     editor.putString(MainActivity.GOOD_WIFI, goodWifisHash);
                     editor.apply();
+                    isWifiChanged = true;
                 }
             }
 
-            JSONObject excellentJSONWifi = new JSONObject();
-            JSONObject goodJSONWifi = new JSONObject();
             try {
                 excellentJSONWifi.put("hash", excelWifisHash);
                 excellentJSONWifi.put("data", String.valueOf(excellent_wifis));
@@ -100,18 +102,34 @@ public class WifiReceiver extends BroadcastReceiver {
             } catch (JSONException e) {
                 e.printStackTrace();
             }
+            myWifiJSON();
+            excellent_wifis.clear();
+            good_wifis.clear();
+
+            /*Collections.sort(fair_wifis);
+            Collections.sort(poor_wifis);*/
+        }
+
+        public void myWifiJSON() {
+
+        myWIFIJSON = new JSONObject();
+        if(isWifiChanged) {
+            try {
+                myWIFIJSON.put("excellent", excellentJSONWifi);
+                myWIFIJSON.put("good", goodJSONWifi);
+                myWIFIJSON.put("trigger", "wifi");
+                isWifiChanged = true;
+            } catch (JSONException e) {
+                e.printStackTrace();
+            }
+            }else {
             try {
                 myWIFIJSON.put("excellent", excellentJSONWifi);
                 myWIFIJSON.put("good", goodJSONWifi);
             } catch (JSONException e) {
                 e.printStackTrace();
             }
-            new_wifiNetworksList.clear();
-            excellent_wifis.clear();
-            good_wifis.clear();
-            fair_wifis.clear();
-            poor_wifis.clear();
-            /*Collections.sort(fair_wifis);
-            Collections.sort(poor_wifis);*/
+            }
+            //Log.d("myWifiJSON", myWIFIJSON.toString());
         }
 }

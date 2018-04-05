@@ -19,12 +19,13 @@ import org.json.JSONObject;
 
 
 
-public class CellReceiver {
+public class CellReceiver extends LocationService{
     private Context context;
     private SharedPreferences sharedPreferences;
     private SharedPreferences.Editor editor;
 
-    public static JSONObject myCellJSON = new JSONObject();
+    public JSONObject myCellJSON = new JSONObject();
+    public static boolean isCellChanged = false;
 
     public CellReceiver(Context context){
         this.context = context;
@@ -55,22 +56,30 @@ public class CellReceiver {
         HashCalculator cellIDHashCheck = new HashCalculator();
         String currentCellHash = cellIDHashCheck.calculateHash(String.valueOf(id));
 
-        if(!(currentCellHash.trim().equals(cellIDValue))) {
+        if (!(currentCellHash.trim().equals(cellIDValue))) {
             editor = sharedPreferences.edit();
             editor.putString(MainActivity.CELL_ID, currentCellHash);
             editor.apply();
             Log.d("onchanged", sharedPreferences.getString(MainActivity.CELL_ID, null));
             NotificationHandler notification = new NotificationHandler(context.getApplicationContext());
             notification.sendNotification();
-        }
 
+            try {
+                myCellJSON.put("hash", String.valueOf(currentCellHash));
+                myCellJSON.put("data", String.valueOf(getCellID()));
+                myCellJSON.put("trigger", "cell");
+                isCellChanged = true;
+            } catch (JSONException e) {
+                e.printStackTrace();
+            }
 
-        try {
-            myCellJSON.put("hash", currentCellHash);
-            myCellJSON.put("data", String.valueOf(getCellID()));
-        } catch (JSONException e) {
-            e.printStackTrace();
+        } else {
+            try {
+                myCellJSON.put("hash", String.valueOf(currentCellHash));
+                myCellJSON.put("data", String.valueOf(getCellID()));
+            } catch (JSONException e) {
+                e.printStackTrace();
+            }
         }
     }
-
 }
