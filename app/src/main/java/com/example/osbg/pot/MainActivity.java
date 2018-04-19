@@ -159,5 +159,15 @@ public class MainActivity extends AppCompatActivity {
             startService(serviceIntent);
             Intent serviceIntent2 = new Intent(this, AirplaneModeListenerService.class);
             startService(serviceIntent2);
+
+        Button messagesButton = (Button) findViewById(R.id.messagesButton);
+        messagesButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                Intent intent = new Intent(getApplicationContext(), MessageActivity.class);
+                startActivity(intent);
+            }
+        });
+
         }
     }

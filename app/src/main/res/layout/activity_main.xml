@@ -55,6 +55,18 @@
         android:layout_below="@id/trustText"
         android:layout_centerHorizontal="true"/>
 
+    <Button
+        android:id="@+id/messagesButton"
+        android:layout_marginTop="10dp"
+        android:layout_width="250dp"
+        android:layout_height="50dp"
+        android:text="Messages"
+        android:textColor="@color/White"
+        android:background="@drawable/ripple_dark"
+        android:stateListAnimator="@animator/my_animator"
+        android:layout_below="@id/logInButton"
+        android:layout_centerHorizontal="true" />
+
     <TextView
         android:id="@+id/pot_site"
         android:layout_width="wrap_content"

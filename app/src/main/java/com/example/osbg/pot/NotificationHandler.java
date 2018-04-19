@@ -8,9 +8,9 @@ import android.app.TaskStackBuilder;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.graphics.Color;
 import android.os.Build;
 import android.support.v4.app.NotificationCompat;
-import android.support.v4.app.NotificationManagerCompat;
 
 /**
  * NotificationHandler class that helps to send STATUS-BAR NOTIFICATIONS
@@ -48,22 +48,23 @@ public class NotificationHandler extends android.app.Notification{
             notificationManager.createNotificationChannel(channel);
         }
 
-
         //Here is a block of code that helps to do something when the user click on the notification
-        Intent notificationIntent = new Intent(context, MainActivity.class);
+        Intent notificationIntent = new Intent(context, MessageActivity.class);
         notificationIntent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_SINGLE_TOP);
 
         PendingIntent pendingIntent = TaskStackBuilder.create(context).addNextIntent(notificationIntent).getPendingIntent(0, PendingIntent.FLAG_UPDATE_CURRENT);
 
         NotificationCompat.Builder mBuilder = new NotificationCompat.Builder(this.context, "default")
-                .setSmallIcon(R.mipmap.ic_place_black_24dp)
+                .setSmallIcon(R.mipmap.ic_chat_black_24dp)
                 .setContentTitle(subject)
                 .setContentText(message)
                 .setOngoing(true)
+                .setLights(Color.CYAN, 150, 5000)
+                .setVibrate(new long[] {200, 200, 200, 200})
                 .setContentIntent(pendingIntent);
 
         Notification notification = mBuilder.build();
-        notification.flags = Notification.FLAG_INSISTENT | Notification.FLAG_AUTO_CANCEL;
+        notification.flags = Notification.FLAG_ONLY_ALERT_ONCE | Notification.FLAG_SHOW_LIGHTS | Notification.FLAG_AUTO_CANCEL;
         notificationManager.notify(0, notification);
     }
 }

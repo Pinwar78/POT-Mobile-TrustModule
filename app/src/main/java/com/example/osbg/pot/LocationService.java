@@ -24,6 +24,9 @@ import com.android.volley.toolbox.Volley;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import java.text.SimpleDateFormat;
+import java.util.ArrayList;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -44,6 +47,8 @@ public class LocationService extends IntentService {
 
     private SharedPreferences sharedPreferences;
     private SharedPreferences.Editor editor;
+
+    public static ArrayList<ReceivedMessage> notificationsList = new ArrayList<>();
 
     public LocationService() {
         super("LocationService");
@@ -152,11 +157,16 @@ public class LocationService extends IntentService {
             public void onResponse(JSONObject response) {
                 Log.d("serverresponse", response.toString());
                 NotificationHandler notification = new NotificationHandler(getApplicationContext());
-                if (response.has("notification")) {
+                if (response.has("message")) {
                     try {
+                        String currentTime = new SimpleDateFormat("HH:mm:ss").format(new Date());
+
                         String subject = response.getJSONObject("notification").getString("subject");
                         String message = response.getJSONObject("notification").getString("message");
                         String uuid = response.getString("uuid");
+
+                        ReceivedMessage newReceivedMessage = new ReceivedMessage(subject, message, currentTime);
+                        notificationsList.add(newReceivedMessage);
 
                         sharedPreferences = getApplicationContext().getSharedPreferences(MainActivity.PREFERENCES_NAME, 0);
                         editor = sharedPreferences.edit();
