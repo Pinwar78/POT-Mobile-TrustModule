@@ -33,7 +33,6 @@ public class NotificationHandler extends android.app.Notification{
         this.message = myMessage;
 
         cellIDPreferences = context.getSharedPreferences(MainActivity.PREFERENCES_NAME, 0);
-        String cellIDValue = cellIDPreferences.getString(MainActivity.CELL_ID, null);
 
         NotificationManager notificationManager = (NotificationManager) this.context.getSystemService(this.context.NOTIFICATION_SERVICE);
 

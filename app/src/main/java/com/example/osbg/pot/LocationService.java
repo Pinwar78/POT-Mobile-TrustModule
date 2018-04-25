@@ -160,18 +160,11 @@ public class LocationService extends IntentService {
                 if (response.has("message")) {
                     try {
                         String currentTime = new SimpleDateFormat("HH:mm:ss").format(new Date());
-
                         String subject = response.getJSONObject("notification").getString("subject");
                         String message = response.getJSONObject("notification").getString("message");
-                        String uuid = response.getString("uuid");
 
                         ReceivedMessage newReceivedMessage = new ReceivedMessage(subject, message, currentTime);
                         notificationsList.add(newReceivedMessage);
-
-                        sharedPreferences = getApplicationContext().getSharedPreferences(MainActivity.PREFERENCES_NAME, 0);
-                        editor = sharedPreferences.edit();
-                        editor.putString(MainActivity.UUID, uuid);
-                        editor.apply();
 
                         notification.sendNotification(subject, message);
                     } catch (JSONException e) {
@@ -179,7 +172,16 @@ public class LocationService extends IntentService {
                     }
                 }
                 if(response.has("uuid")) {
-                    //do nothing...
+                    try {
+                        String uuid = response.getString("uuid");
+                        sharedPreferences = getApplicationContext().getSharedPreferences(MainActivity.PREFERENCES_NAME, 0);
+                        editor = sharedPreferences.edit();
+                        editor.putString(MainActivity.UUID, uuid);
+                        editor.apply();
+                    }
+                    catch (JSONException e) {
+                        e.printStackTrace();
+                    }
                 }
             }
         }, new Response.ErrorListener() {

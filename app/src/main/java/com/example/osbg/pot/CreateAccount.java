@@ -51,10 +51,7 @@ public class CreateAccount extends AppCompatActivity {
             public void onClick(View view) {
                 try {
                     passwordPreferences = getApplicationContext().getSharedPreferences(PREFERENCES_NAME, 0);
-                    String passwordValue = passwordPreferences.getString(MY_PASSWORD, null);
 
-                    //check if the value is null or empty
-                    //(passwordValue == null || passwordValue.trim().isEmpty())
                     if(createPassword.getText().length() > 5 && validatePassword()) {
                         HashCalculator hashCalculator = new HashCalculator();
                         String inputPasswordHash = hashCalculator.calculateHash(createPassword.getText().toString());

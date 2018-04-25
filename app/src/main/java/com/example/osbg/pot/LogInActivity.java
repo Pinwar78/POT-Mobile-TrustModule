@@ -18,7 +18,6 @@ import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.support.v7.widget.Toolbar;
 import android.text.Editable;
-import android.text.TextUtils;
 import android.text.TextWatcher;
 import android.view.Gravity;
 import android.view.View;
@@ -51,8 +50,8 @@ import javax.crypto.SecretKey;
 
 public class LogInActivity extends AppCompatActivity implements FingerprintSuccess{
 
-    private EditText inputEmail, inputPassword;
-    private TextInputLayout inputLayoutEmail, inputLayoutPassword;
+    private EditText inputPassword;
+    private TextInputLayout inputLayoutPassword;
     private TextView fingerprintInstructions;
     private ImageView fingerprintImage;
     private Button btnLogInActivity;
@@ -197,9 +196,6 @@ public class LogInActivity extends AppCompatActivity implements FingerprintSucce
 
         public void afterTextChanged(Editable editable) {
             switch (view.getId()) {
-                /*case R.id.input_email:
-                    validateEmail();
-                    break;*/
                 case R.id.input_password:
                     validatePassword();
                     break;
@@ -208,18 +204,11 @@ public class LogInActivity extends AppCompatActivity implements FingerprintSucce
     }
 
     private void submitForm() {
-        /*if(!validateEmail()) {
-            return;
-        }*/
         if(validatePassword() && isPasswordRight()) {
             onSuccess();
             Toast.makeText(getApplicationContext(), "Login successful!", Toast.LENGTH_SHORT).show();
         }
     }
-
-    /*private static boolean isValidEmail(String email) {
-        return !TextUtils.isEmpty(email) && android.util.Patterns.EMAIL_ADDRESS.matcher(email).matches();
-    }*/
 
     public void changeLoginBtnSuccess() {
         btnLogInActivity.setEnabled(false);
@@ -240,19 +229,6 @@ public class LogInActivity extends AppCompatActivity implements FingerprintSucce
             getWindow().setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_STATE_ALWAYS_VISIBLE);
         }
     }
-
-    /*private boolean validateEmail() {
-        String email = inputEmail.getText().toString().trim();
-
-        if(email.isEmpty() || !isValidEmail(email)) {
-            inputLayoutEmail.setError(getString(R.string.err_msg_email));
-            requestFocus(inputEmail);
-            return false;
-        } else {
-            inputLayoutEmail.setErrorEnabled(false);
-        }
-        return true;
-    }*/
 
     private boolean validatePassword() {
         if(inputPassword.getText().toString().trim().isEmpty()) {

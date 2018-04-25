@@ -105,9 +105,6 @@ public class WifiReceiver extends BroadcastReceiver {
             myWifiJSON();
             excellent_wifis.clear();
             good_wifis.clear();
-
-            /*Collections.sort(fair_wifis);
-            Collections.sort(poor_wifis);*/
         }
 
         public void myWifiJSON() {
@@ -130,6 +127,5 @@ public class WifiReceiver extends BroadcastReceiver {
                 e.printStackTrace();
             }
             }
-            //Log.d("myWifiJSON", myWIFIJSON.toString());
         }
 }

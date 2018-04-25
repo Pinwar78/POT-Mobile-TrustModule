@@ -7,7 +7,6 @@ import android.content.Intent;
 import android.os.Handler;
 import android.provider.Settings;
 import android.support.annotation.Nullable;
-import android.util.Log;
 
 /**
  * AirplaneModeListenerService - running always in background, listens for the airplane mode status,
@@ -59,10 +58,8 @@ public class AirplaneModeListenerService extends IntentService {
 
                 if(String.valueOf(isAirplaneModeOn(getApplicationContext())).equals("false")) {
                     if(isLocationServiceRunning(LocationService.class)) {
-                        //Log.d("locservrunning", "Location Service is Running, do nothing!");
                         //if true, do nothing
                     } else {
-                        //Log.d("locservnotrunning", "Location Service is not running, starting it...");
                         Intent serviceIntentStart;
                         serviceIntentStart = new Intent(getApplicationContext(), LocationService.class);
                         startService(serviceIntentStart);
@@ -72,14 +69,12 @@ public class AirplaneModeListenerService extends IntentService {
                     if(!(isLocationServiceRunning(LocationService.class))) {
                         //not running, do nothing...
                     } else {
-                        //Log.d("locservstop", "Airpane mode ON, stopping location service");
                         Intent serviceIntentStop;
                         serviceIntentStop = new Intent(getApplicationContext(), LocationService.class);
                         stopService(serviceIntentStop);
                     }
                 }
 
-                //Log.d("airplanemode", String.valueOf(isAirplaneModeOn(getApplicationContext())));
                 doInback();
             }
         }, 1000);

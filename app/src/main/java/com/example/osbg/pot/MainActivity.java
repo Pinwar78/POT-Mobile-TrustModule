@@ -17,7 +17,6 @@ import android.telephony.gsm.GsmCellLocation;
 import android.view.View;
 import android.widget.Button;
 import android.widget.TextView;
-import android.widget.Toast;
 
 /**
  * MainActivity class when you open the app...
@@ -139,7 +138,6 @@ public class MainActivity extends AppCompatActivity {
                         editor = sharedPreferences.edit();
                         editor.putString(CELL_ID, currentCellHash);
                         editor.apply();
-                        //Toast.makeText(this, "Cell location: " + currentCellHash + " saved !", Toast.LENGTH_LONG).show();
                     }
                 } catch (Exception e) {
                     e.printStackTrace();
@@ -147,13 +145,6 @@ public class MainActivity extends AppCompatActivity {
             }
 
             final WifiManager wifiManager = (WifiManager) getApplicationContext().getSystemService(WIFI_SERVICE);
-            try {
-                WifiInfo wifiInfo = wifiManager.getConnectionInfo();
-                String wifiSSID = wifiInfo.getSSID();
-                //Toast.makeText(this, "Wifi SSID: " + wifiSSID, Toast.LENGTH_LONG).show();
-            } catch (Exception e) {
-                e.printStackTrace();
-            }
 
             Intent serviceIntent = new Intent(this, LocationService.class);
             startService(serviceIntent);
