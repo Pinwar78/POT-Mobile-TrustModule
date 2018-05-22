@@ -74,9 +74,11 @@ public class LocationService extends IntentService {
                 // TODO Auto-generated method stub
                 mWifiManager = (WifiManager) getApplicationContext().getSystemService(Context.WIFI_SERVICE);
                 mWifiScanReceiver = new WifiReceiver();
-                registerReceiver(mWifiScanReceiver, new IntentFilter(
+                getApplicationContext().registerReceiver(mWifiScanReceiver, new IntentFilter(
                         WifiManager.SCAN_RESULTS_AVAILABLE_ACTION));
                 mWifiManager.startScan();
+
+
 
                 CellReceiver cellReceiver = new CellReceiver(getApplicationContext());
                 cellReceiver.saveCellID();
