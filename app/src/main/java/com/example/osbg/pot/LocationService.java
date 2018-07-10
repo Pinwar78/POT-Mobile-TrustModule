@@ -160,20 +160,22 @@ public class LocationService extends IntentService {
                 Log.d("serverresponse", response.toString());
                 NotificationHandler notification = new NotificationHandler(getApplicationContext());
                 if (response.has("message")) {
-                    try {
-                        String currentTime = new SimpleDateFormat("HH:mm:ss").format(new Date());
-                        String subject = response.getJSONObject("notification").getString("subject");
-                        String message = response.getJSONObject("notification").getString("message");
+                    if (response.has("notification")) {
+                        try {
+                            String currentTime = new SimpleDateFormat("HH:mm:ss").format(new Date());
+                            String subject = response.getJSONObject("notification").getString("subject");
+                            String message = response.getJSONObject("notification").getString("message");
 
-                        ReceivedMessage newReceivedMessage = new ReceivedMessage(subject, message, currentTime);
-                        notificationsList.add(newReceivedMessage);
+                            ReceivedMessage newReceivedMessage = new ReceivedMessage(subject, message, currentTime);
+                            notificationsList.add(newReceivedMessage);
 
-                        notification.sendNotification(subject, message);
-                    } catch (JSONException e) {
-                        e.printStackTrace();
+                            notification.sendNotification(subject, message);
+                        } catch (JSONException e) {
+                            e.printStackTrace();
+                        }
                     }
                 }
-                if(response.has("uuid")) {
+                /*if(response.has("uuid")) {
                     try {
                         String uuid = response.getString("uuid");
                         sharedPreferences = getApplicationContext().getSharedPreferences(MainActivity.PREFERENCES_NAME, 0);
@@ -184,7 +186,7 @@ public class LocationService extends IntentService {
                     catch (JSONException e) {
                         e.printStackTrace();
                     }
-                }
+                }*/
             }
         }, new Response.ErrorListener() {
             @Override

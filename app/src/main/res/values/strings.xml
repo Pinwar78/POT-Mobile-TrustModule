@@ -18,4 +18,7 @@
     <string name="trust_text">Process of Things builds Trust and keeps you safe in an insecure world, powered by the Blockchain technology!</string>
     <string name="pot_site"><i>Click <b>HERE</b> to learn more</i></string>
     <string name="clear_all_messages">Clear all</string>
+    <string name="turn_off_flashlight">FlashLight ON</string>
+    <string name="turn_on_flashlight">FlashLight OFF</string>
+    <string name="message">Place a QR Code inside the viewfinder rectangle to scan it.</string>
 </resources>

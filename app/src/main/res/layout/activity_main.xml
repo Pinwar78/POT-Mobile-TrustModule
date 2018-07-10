@@ -59,6 +59,18 @@
         android:layout_below="@id/logInButton"
         android:layout_centerHorizontal="true" />
 
+    <Button
+        android:id="@+id/scanButton"
+        android:layout_width="250dp"
+        android:layout_height="50dp"
+        android:layout_marginTop="10dp"
+        android:text="SCAN QR CODE"
+        android:textColor="@color/White"
+        android:layout_below="@id/messagesButton"
+        android:background="@drawable/ripple_dark"
+        android:stateListAnimator="@animator/my_animator"
+        android:layout_centerHorizontal="true"/>
+
     <TextView
         android:id="@+id/pot_site"
         android:layout_width="wrap_content"

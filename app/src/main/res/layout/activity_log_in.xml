@@ -59,6 +59,15 @@
             android:stateListAnimator="@animator/my_animator"
             android:layout_marginTop="40dp"
             android:textColor="@android:color/white"/>
+        <Button
+            android:id="@+id/btnDeleteKeys"
+            android:layout_width="fill_parent"
+            android:layout_height="wrap_content"
+            android:text="DELETE KEYS"
+            android:background="@drawable/ripple"
+            android:stateListAnimator="@animator/my_animator"
+            android:layout_marginTop="10dp"
+            android:textColor="@android:color/white"/>
 
         <RelativeLayout
             android:layout_width="match_parent"

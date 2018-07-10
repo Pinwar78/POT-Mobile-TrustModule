@@ -3,6 +3,7 @@ package com.example.osbg.pot;
 import android.Manifest;
 import android.annotation.TargetApi;
 import android.app.KeyguardManager;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
@@ -14,11 +15,13 @@ import android.security.keystore.KeyPermanentlyInvalidatedException;
 import android.security.keystore.KeyProperties;
 import android.support.design.widget.TextInputLayout;
 import android.support.v4.app.ActivityCompat;
+import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.support.v7.widget.Toolbar;
 import android.text.Editable;
 import android.text.TextWatcher;
+import android.util.Log;
 import android.view.Gravity;
 import android.view.View;
 import android.view.WindowManager;
@@ -55,6 +58,8 @@ public class LogInActivity extends AppCompatActivity implements FingerprintSucce
     private TextView fingerprintInstructions;
     private ImageView fingerprintImage;
     private Button btnLogInActivity;
+
+    private Button btnDeleteKeys;
 
     private static final String KEY_NAME = "yourKey";
     private Cipher cipher;
@@ -153,6 +158,7 @@ public class LogInActivity extends AppCompatActivity implements FingerprintSucce
         inputPassword = (EditText) findViewById(R.id.input_password);
 
         btnLogInActivity = (Button) findViewById(R.id.btnLogInActivity);
+        btnDeleteKeys = (Button) findViewById(R.id.btnDeleteKeys);
 
         //inputEmail.addTextChangedListener(new MyTextWatcher(inputEmail));
         inputPassword.addTextChangedListener(new MyTextWatcher(inputPassword));
@@ -161,6 +167,13 @@ public class LogInActivity extends AppCompatActivity implements FingerprintSucce
             @Override
             public void onClick(View view) {
                 submitForm();
+            }
+        });
+
+        btnDeleteKeys.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                deleteKey(MainActivity.ALIAS);
             }
         });
     }
@@ -350,4 +363,35 @@ public class LogInActivity extends AppCompatActivity implements FingerprintSucce
             super(e);
         }
     }
+
+    public void deleteKey(final String alias) {
+        AlertDialog alertDialog =new AlertDialog.Builder(this)
+                .setTitle("Delete Key")
+                .setMessage("Do you want to delete the key \"" + alias + "\" from the keystore?")
+                .setPositiveButton("Yes", new DialogInterface.OnClickListener() {
+                    public void onClick(DialogInterface dialog, int which) {
+                        try {
+                            if(keyStore.containsAlias(MainActivity.ALIAS)) {
+                                keyStore.deleteEntry(alias);
+                                Toast.makeText(LogInActivity.this, "Keys deleted!", Toast.LENGTH_SHORT).show();
+                            } else {
+                                Toast.makeText(LogInActivity.this, "Public/Private key not found!", Toast.LENGTH_SHORT).show();
+                            }
+                        } catch (KeyStoreException e) {
+                            Toast.makeText(LogInActivity.this,
+                                    "Exception " + e.getMessage() + " occured",
+                                    Toast.LENGTH_LONG).show();
+                        }
+                        dialog.dismiss();
+                    }
+                })
+                .setNegativeButton("No", new DialogInterface.OnClickListener() {
+                    public void onClick(DialogInterface dialog, int which) {
+                        dialog.dismiss();
+                    }
+                })
+                .create();
+        alertDialog.show();
+    }
+
 }
