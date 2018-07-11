@@ -19,7 +19,6 @@ import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.telephony.TelephonyManager;
 import android.telephony.gsm.GsmCellLocation;
-import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 import android.widget.TextView;
@@ -61,8 +60,6 @@ public class MainActivity extends AppCompatActivity {
     public static final String ALIAS = "potkeys";
     public static final String NODE_PUB_KEY = "nodepubkey";
     public static final String HOSTST = "hosts";
-    public static final String NODE_IP = "nodeip";
-    public static int IS_CONNECTED = 0;
     private SharedPreferences sharedPreferences;
     private SharedPreferences.Editor editor;
 
@@ -228,6 +225,9 @@ public class MainActivity extends AppCompatActivity {
                             nodeConnector.saveAllSettings();
                             nodeConnector.connectToNode();
                         }
+                        else {
+                            showResultDialogue(resultString);
+                        }
                     } catch (NoSuchAlgorithmException e) {
                         e.printStackTrace();
                     }
@@ -239,36 +239,8 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 
-    public void showResultDialogue(final String result) {
-        AlertDialog.Builder builder;
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
-            builder = new AlertDialog.Builder(this, android.R.style.Theme_Material_Dialog_Alert);
-        } else {
-            builder = new AlertDialog.Builder(this);
-        }
-        builder.setTitle("Scan Result")
-                .setMessage("QR Code result: " + result)
-                .setPositiveButton("COPY", new DialogInterface.OnClickListener() {
-                    public void onClick(DialogInterface dialog, int which) {
-                        // continue with delete
-                        ClipboardManager clipboard = (ClipboardManager) getSystemService(CLIPBOARD_SERVICE);
-                        ClipData clip = ClipData.newPlainText("Scan Result", result);
-                        clipboard.setPrimaryClip(clip);
-                        Toast.makeText(MainActivity.this, "Result copied to clipboard", Toast.LENGTH_SHORT).show();
-
-                    }
-                })
-                .setNegativeButton("CANCEL", new DialogInterface.OnClickListener() {
-                    public void onClick(DialogInterface dialog, int which) {
-                        // do nothing
-                        dialog.dismiss();
-                    }
-                })
-                .show();
-    }
-
     private boolean checkIfHEX(String s) {
-        if (s.matches("^[0-9A-Fa-f]+$")) {
+        if (s.matches("^[0-9A-Fa-f]+$") && !(s.matches("\\d+"))) {
             return true;
         } else return false;
     }
@@ -311,5 +283,33 @@ public class MainActivity extends AppCompatActivity {
         } catch (KeyStoreException | NoSuchAlgorithmException | NoSuchProviderException | InvalidAlgorithmParameterException | CertificateException | IOException e) {
             e.printStackTrace();
         }
+    }
+
+    public void showResultDialogue(final String result) {
+        AlertDialog.Builder builder;
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
+            builder = new AlertDialog.Builder(this, android.R.style.Theme_Material_Dialog_Alert);
+        } else {
+            builder = new AlertDialog.Builder(this);
+        }
+        builder.setTitle("Scan Result")
+                .setMessage("QR Code result: " + result)
+                .setPositiveButton("COPY", new DialogInterface.OnClickListener() {
+                    public void onClick(DialogInterface dialog, int which) {
+                        // continue with delete
+                        ClipboardManager clipboard = (ClipboardManager) getSystemService(CLIPBOARD_SERVICE);
+                        ClipData clip = ClipData.newPlainText("Scan Result", result);
+                        clipboard.setPrimaryClip(clip);
+                        Toast.makeText(MainActivity.this, "Result copied to clipboard", Toast.LENGTH_SHORT).show();
+
+                    }
+                })
+                .setNegativeButton("CANCEL", new DialogInterface.OnClickListener() {
+                    public void onClick(DialogInterface dialog, int which) {
+                        // do nothing
+                        dialog.dismiss();
+                    }
+                })
+                .show();
     }
 }

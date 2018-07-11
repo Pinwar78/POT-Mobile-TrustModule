@@ -70,13 +70,12 @@ public class NodeConnector {
         saveUUID();
         saveNodePublicKey();
         saveHost();
-        Toast.makeText(context, "Node settings applied!", Toast.LENGTH_LONG).show();
+        Toast.makeText(context, "Node settings applied!", Toast.LENGTH_SHORT).show();
     }
 
     public void connectToNode() {
         try {
             sharedPreferences = context.getSharedPreferences(MainActivity.PREFERENCES_NAME, 0);
-            String sharedPrefHosts = sharedPreferences.getString("hosts", "");
             JSONObject myDataToEncrypt = new JSONObject();
             try {
                 KeyStore keyStore = KeyStore.getInstance("AndroidKeyStore");

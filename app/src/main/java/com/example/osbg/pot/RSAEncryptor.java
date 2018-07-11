@@ -4,6 +4,7 @@ import android.content.Context;
 import android.content.SharedPreferences;
 import android.util.Base64;
 import android.util.Log;
+import android.widget.Toast;
 
 import java.security.InvalidKeyException;
 import java.security.KeyFactory;
@@ -27,11 +28,17 @@ public class RSAEncryptor {
     }
 
     private PublicKey getNodePublicKey() {
-        SharedPreferences shared = context.getSharedPreferences(MainActivity.PREFERENCES_NAME, 0);
-        String nodePublicKey = shared.getString("nodepubkey", "");
-        PublicKey generatedNodePubKey = createPublicKey(nodePublicKey);
-        Log.d("generatedPubKey", generatedNodePubKey.toString());
-        return generatedNodePubKey;
+        try {
+            SharedPreferences shared = context.getSharedPreferences(MainActivity.PREFERENCES_NAME, 0);
+            String nodePublicKey = shared.getString("nodepubkey", "");
+            PublicKey generatedNodePubKey = createPublicKey(nodePublicKey);
+            Log.d("generatedPubKey", generatedNodePubKey.toString());
+            return generatedNodePubKey;
+        } catch (Exception e) {
+            e.printStackTrace();
+            Toast.makeText(context, "Node public key not recognized!", Toast.LENGTH_SHORT).show();
+        }
+        return null;
     }
 
     private PublicKey createPublicKey(String key) {

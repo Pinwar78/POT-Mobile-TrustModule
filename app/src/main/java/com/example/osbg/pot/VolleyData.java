@@ -7,11 +7,12 @@ import android.util.Log;
 import android.widget.Toast;
 
 import com.android.volley.AuthFailureError;
+import com.android.volley.NoConnectionError;
 import com.android.volley.Request;
 import com.android.volley.RequestQueue;
 import com.android.volley.Response;
+import com.android.volley.TimeoutError;
 import com.android.volley.VolleyError;
-import com.android.volley.VolleyLog;
 import com.android.volley.toolbox.JsonObjectRequest;
 import com.android.volley.toolbox.Volley;
 
@@ -39,7 +40,6 @@ import javax.crypto.NoSuchPaddingException;
 public class VolleyData {
     private Context context;
     private SharedPreferences sharedPreferences;
-    private SharedPreferences.Editor editor;
 
     public VolleyData(Context context) {
         this.context = context;
@@ -114,31 +114,31 @@ public class VolleyData {
             public void onResponse(JSONObject response) {
                 Log.d("volleydataresponse", response.toString());
                 if(response.toString().contains("OK")) {
-                    Toast.makeText(context, "Connected to node!", Toast.LENGTH_LONG).show();
+                    Toast.makeText(context, "Connected to node!", Toast.LENGTH_SHORT).show();
                 }
             }
         }, new Response.ErrorListener() {
             @Override
             public void onErrorResponse(VolleyError error) {
-                String body = "";
-                String statusCode = String.valueOf(error.networkResponse.statusCode);
+                String body;
                 JSONObject jsonObject = new JSONObject();
-                if(error.networkResponse.data!=null) {
+                if (error instanceof TimeoutError || error instanceof NoConnectionError) {
+                    Toast.makeText(context, "Server timeout!", Toast.LENGTH_LONG).show();
+                }
+                else if (error.networkResponse.data != null) {
+                        try {
+                            body = new String(error.networkResponse.data, "UTF-8");
+                            jsonObject = new JSONObject(body);
+                        } catch (UnsupportedEncodingException | JSONException e) {
+                            e.printStackTrace();
+                        }
+                    }
                     try {
-                        body = new String(error.networkResponse.data, "UTF-8");
-                        jsonObject = new JSONObject(body);
-                    } catch (UnsupportedEncodingException e) {
-                        e.printStackTrace();
+                        Toast.makeText(context, "Error: " + jsonObject.get("error"), Toast.LENGTH_LONG).show();
                     } catch (JSONException e) {
                         e.printStackTrace();
                     }
                 }
-                try {
-                    Toast.makeText(context, "Error: " + jsonObject.get("error"), Toast.LENGTH_LONG).show();
-                } catch (JSONException e) {
-                    e.printStackTrace();
-                }
-            }
         }) {
             @Override
             public Map<String, String> getHeaders() throws AuthFailureError {
@@ -149,5 +149,6 @@ public class VolleyData {
         };
         jsonObjectRequest.setTag("myjsonobjrequest");
         queue.add(jsonObjectRequest);
+        System.gc();
     }
 }
