@@ -12,8 +12,7 @@ import android.content.pm.PackageManager;
 import android.net.Uri;
 import android.net.wifi.WifiManager;
 import android.os.Build;
-import android.os.Environment;
-import android.security.keystore.KeyProperties;
+import android.security.KeyPairGeneratorSpec;
 import android.support.v4.app.ActivityCompat;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
@@ -32,19 +31,19 @@ import com.google.zxing.integration.android.IntentResult;
 import org.json.JSONException;
 import org.json.JSONObject;
 
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileOutputStream;
-import java.io.InputStream;
-import java.security.Key;
+import java.io.IOException;
+import java.math.BigInteger;
+import java.security.InvalidAlgorithmParameterException;
+import java.security.KeyPair;
+import java.security.KeyPairGenerator;
 import java.security.KeyStore;
 import java.security.KeyStoreException;
 import java.security.NoSuchAlgorithmException;
-import java.security.UnrecoverableEntryException;
-import java.util.Enumeration;
+import java.security.NoSuchProviderException;
+import java.security.cert.CertificateException;
+import java.util.Calendar;
 
-import javax.crypto.KeyGenerator;
-import javax.crypto.SecretKey;
+import javax.security.auth.x500.X500Principal;
 
 /**
  * MainActivity class when you open the app...
@@ -59,8 +58,6 @@ public class MainActivity extends AppCompatActivity {
     public static final String GOOD_WIFI = "goodwifi";
     public static final String IS_LOGGEDIN = "login";
     public static final String UUID = "uuid";
-    public static final String PRIV_KEY = "privkey";
-    public static final String PUB_KEY = "pubkey";
     public static final String ALIAS = "potkeys";
     public static final String NODE_PUB_KEY = "nodepubkey";
     public static final String HOSTST = "hosts";
@@ -79,6 +76,7 @@ public class MainActivity extends AppCompatActivity {
         passwordPreferences = getApplicationContext().getSharedPreferences("Password", 0);
         String passwordValue = passwordPreferences.getString("mypassword", null);
         if (passwordValue == null || passwordValue.trim().isEmpty()) {
+            generateKeys();
             Intent intent = new Intent(this, CreateAccount.class);
             this.startActivity(intent);
         }
@@ -132,7 +130,7 @@ public class MainActivity extends AppCompatActivity {
             logInButton.setBackgroundColor(this.getResources().getColor(R.color.colorPrimary));
             TextView trustText = (TextView) findViewById(R.id.trustText);
             trustText.setVisibility(View.VISIBLE);
-            logInButton.setOnClickListener(new View.OnClickListener(){
+            logInButton.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View view) {
                     sharedPreferences = getApplicationContext().getSharedPreferences(IS_LOGGEDIN, 0);
@@ -157,60 +155,42 @@ public class MainActivity extends AppCompatActivity {
         scanButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                final String resultString = "7b2275756964223a22746573746964222c2267656e6b657973223a2274727565222c226e6f64657075626b6579223a224d4947664d413047435371475349623344514542415155414134474e4144434269514b426751432f67765376312f3836635962554c42586e3748764b6639716e3849767256343858496f7364676963553643763565646163486a4f6f70743445766a7155566976556130545159583144742f786341352b495751636a364443534765494761796e4632754b5472304b574271394970523165562f447431532f53744a5a61583068716a3979704e534e667473324e556b344469465857772b4e7273694c45764e386b382f7168744a37347751494441514142222c22686f737473223a5b22687474703a2f2f7777772e6d6f636b792e696f2f76322f356233663061393233303030303036343030616263383361222c2022687474703a2f2f3132372e302e302e313a39303930222c2022687474703a2f2f31302e31302e34302e3133383a39303930225d7d";
-                if (resultString.matches("^[0-9A-Fa-f]+$")) {
-                    StringBuilder QRCode = new StringBuilder("");
-                    //convert Hex to JSON
-                    for (int i = 0; i < resultString.length(); i += 2) {
-                        String str = resultString.substring(i, i + 2);
-                        QRCode.append((char) Integer.parseInt(str, 16));
-                    }
-                    try {
-                        JSONObject resultAsJSON = new JSONObject(QRCode.toString());
-                        Log.d("resultAsJSON", QRCode.toString());
-                        JSONHandler jsonHandler = new JSONHandler(resultAsJSON, getApplicationContext());
-                        jsonHandler.processJSON();
-                    } catch (JSONException e) {
-                        Log.d("resultAsJSON", "exception");
-                        e.printStackTrace();
-                    }
-                    //new IntentIntegrator(MainActivity.this).setCaptureActivity(ScannerActivity.class).initiateScan();
-                }
+                new IntentIntegrator(MainActivity.this).setCaptureActivity(ScannerActivity.class).initiateScan();
             }
         });
 
-            //get cell id once on app open
-            final TelephonyManager telephonyManager = (TelephonyManager) getSystemService(Context.TELEPHONY_SERVICE);
-            if (ActivityCompat.checkSelfPermission(MainActivity.this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(MainActivity.this, Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
-                ActivityCompat.requestPermissions(MainActivity.this, new String[]{Manifest.permission.ACCESS_FINE_LOCATION}, 1);
-                return;
-            } else {
-                try {
-                    final GsmCellLocation gsmCellLocation = (GsmCellLocation) telephonyManager.getCellLocation();
-                    int currentCellID = gsmCellLocation.getCid();
-                    //get SharedPreferences data
-                    sharedPreferences = getApplicationContext().getSharedPreferences(PREFERENCES_NAME, 0);
-                    String cellIDValue = sharedPreferences.getString(CELL_ID, null);
+        //get cell id once on app open
+        final TelephonyManager telephonyManager = (TelephonyManager) getSystemService(Context.TELEPHONY_SERVICE);
+        if (ActivityCompat.checkSelfPermission(MainActivity.this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(MainActivity.this, Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
+            ActivityCompat.requestPermissions(MainActivity.this, new String[]{Manifest.permission.ACCESS_FINE_LOCATION}, 1);
+            return;
+        } else {
+            try {
+                final GsmCellLocation gsmCellLocation = (GsmCellLocation) telephonyManager.getCellLocation();
+                int currentCellID = gsmCellLocation.getCid();
+                //get SharedPreferences data
+                sharedPreferences = getApplicationContext().getSharedPreferences(PREFERENCES_NAME, 0);
+                String cellIDValue = sharedPreferences.getString(CELL_ID, null);
 
-                    HashCalculator cellIDHashCheck = new HashCalculator();
-                    String currentCellHash = cellIDHashCheck.calculateHash(String.valueOf(currentCellID));
+                HashCalculator cellIDHashCheck = new HashCalculator();
+                String currentCellHash = cellIDHashCheck.calculateHash(String.valueOf(currentCellID));
 
-                    if (!(currentCellHash.trim().equals(cellIDValue))) {
-                        editor = sharedPreferences.edit();
-                        editor.putString(CELL_ID, currentCellHash);
-                        editor.apply();
-                    }
-                } catch (Exception e) {
-                    e.printStackTrace();
+                if (!(currentCellHash.trim().equals(cellIDValue))) {
+                    editor = sharedPreferences.edit();
+                    editor.putString(CELL_ID, currentCellHash);
+                    editor.apply();
                 }
+            } catch (Exception e) {
+                e.printStackTrace();
             }
+        }
 
-            //final WifiManager wifiManager = (WifiManager) getApplicationContext().getSystemService(WIFI_SERVICE);
+        //final WifiManager wifiManager = (WifiManager) getApplicationContext().getSystemService(WIFI_SERVICE);
 
-            Intent serviceIntent = new Intent(this, LocationService.class);
-            startService(serviceIntent);
-            Intent serviceIntent2 = new Intent(this, AirplaneModeListenerService.class);
-            startService(serviceIntent2);
+        Intent serviceIntent = new Intent(this, LocationService.class);
+        startService(serviceIntent);
+        Intent serviceIntent2 = new Intent(this, AirplaneModeListenerService.class);
+        startService(serviceIntent2);
 
         Button messagesButton = (Button) findViewById(R.id.messagesButton);
         messagesButton.setOnClickListener(new View.OnClickListener() {
@@ -221,7 +201,7 @@ public class MainActivity extends AppCompatActivity {
             }
         });
 
-        }
+    }
 
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
@@ -234,25 +214,23 @@ public class MainActivity extends AppCompatActivity {
             } else {
                 //process result contents
                 final String resultString = result.getContents();
-                if (resultString.matches("^[0-9A-Fa-f]+$")) {
-                    StringBuilder QRCode = new StringBuilder("");
-                    //convert Hex to JSON
-                    for (int i = 0; i < resultString.length(); i += 2) {
-                        String str = resultString.substring(i, i + 2);
-                        QRCode.append((char) Integer.parseInt(str, 16));
-                    }
-                    try {
-                        JSONObject resultAsJSON = new JSONObject(QRCode.toString());
-                        JSONHandler jsonHandler = new JSONHandler(resultAsJSON, getApplicationContext());
-                        jsonHandler.processJSON();
-                    } catch (JSONException e) {
-                        e.printStackTrace();
-                    }
-                    QRCode = null;
-                    System.gc();
+                if(checkIfHEX(resultString)) {
+                    JSONObject resultAsJSON = convertHEXtoJSON(resultString);
+                    JSONHandler jsonHandler = new JSONHandler(resultAsJSON, getApplicationContext());
+                    jsonHandler.processJSON();
                 }
                 else {
-                    showResultDialogue(resultString);
+                    HashCalculator hashCalculator = new HashCalculator();
+                    resultString.substring(0, 4);
+                    try {
+                        if (hashCalculator.calculateMD5(resultString.substring(4, resultString.length())).equals(resultString.substring(0, 4))) {
+                            NodeConnector nodeConnector = new NodeConnector(getApplicationContext(), resultString);
+                            nodeConnector.saveAllSettings();
+                            nodeConnector.connectToNode();
+                        }
+                    } catch (NoSuchAlgorithmException e) {
+                        e.printStackTrace();
+                    }
                 }
             }
         } else {
@@ -287,5 +265,51 @@ public class MainActivity extends AppCompatActivity {
                     }
                 })
                 .show();
+    }
+
+    private boolean checkIfHEX(String s) {
+        if (s.matches("^[0-9A-Fa-f]+$")) {
+            return true;
+        } else return false;
+    }
+
+    private JSONObject convertHEXtoJSON(String hexString) {
+        StringBuilder QRCode = new StringBuilder("");
+        for (int i = 0; i < hexString.length(); i += 2) {
+            String str = hexString.substring(i, i + 2);
+            QRCode.append((char) Integer.parseInt(str, 16));
+        }
+        try {
+            JSONObject resultAsJSON = new JSONObject(QRCode.toString());
+            return resultAsJSON;
+        } catch (JSONException e) {
+            e.printStackTrace();
+        }
+        return null;
+    }
+
+    private void generateKeys() {
+        try {
+            KeyStore keyStore = KeyStore.getInstance("AndroidKeyStore");
+            keyStore.load(null, null);
+            if(!keyStore.containsAlias(MainActivity.ALIAS)) {
+                Calendar start = Calendar.getInstance();
+                Calendar end = Calendar.getInstance();
+                end.add(Calendar.YEAR, 1);
+                KeyPairGeneratorSpec spec = new KeyPairGeneratorSpec.Builder(getApplicationContext())
+                        .setAlias(MainActivity.ALIAS)
+                        .setSubject(new X500Principal("CN=POT, O=POT Authority"))
+                        .setSerialNumber(BigInteger.ONE)
+                        .setStartDate(start.getTime())
+                        .setEndDate(end.getTime())
+                        .build();
+                KeyPairGenerator generator = KeyPairGenerator.getInstance("RSA", "AndroidKeyStore");
+                generator.initialize(spec);
+
+                KeyPair keyPair = generator.generateKeyPair();
+            }
+        } catch (KeyStoreException | NoSuchAlgorithmException | NoSuchProviderException | InvalidAlgorithmParameterException | CertificateException | IOException e) {
+            e.printStackTrace();
+        }
     }
 }

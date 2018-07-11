@@ -170,12 +170,6 @@ public class LogInActivity extends AppCompatActivity implements FingerprintSucce
             }
         });
 
-        btnDeleteKeys.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                deleteKey(MainActivity.ALIAS);
-            }
-        });
     }
 
     @Override
@@ -183,13 +177,29 @@ public class LogInActivity extends AppCompatActivity implements FingerprintSucce
         changeLoginBtnSuccess();
         changeLoginStatus();
 
-        Handler handler = new Handler();
+        sharedPreferences = getApplicationContext().getSharedPreferences(MainActivity.IS_LOGGEDIN, 0);
+        editor = sharedPreferences.edit();
+        editor.putBoolean(MainActivity.IS_LOGGEDIN, true);
+        editor.apply();
+
+        btnDeleteKeys.setEnabled(true);
+        btnDeleteKeys.setAlpha(1f);
+        btnDeleteKeys.setOnClickListener(new View.OnClickListener() {
+                                             @Override
+                                             public void onClick(View v) {
+                                                 deleteKey(MainActivity.ALIAS);
+                                             }
+                                         });
+
+
+
+        /*Handler handler = new Handler();
         handler.postDelayed(new Runnable() {
             @Override
             public void run() {
                 finish();
             }
-        }, 300);
+        }, 300);*/
     }
 
 

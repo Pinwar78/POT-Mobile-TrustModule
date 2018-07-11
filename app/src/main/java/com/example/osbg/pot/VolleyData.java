@@ -4,6 +4,7 @@ import android.content.Context;
 import android.content.SharedPreferences;
 import android.util.Base64;
 import android.util.Log;
+import android.widget.Toast;
 
 import com.android.volley.AuthFailureError;
 import com.android.volley.Request;
@@ -18,6 +19,7 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.io.IOException;
+import java.io.UnsupportedEncodingException;
 import java.nio.charset.Charset;
 import java.security.InvalidKeyException;
 import java.security.KeyStore;
@@ -72,9 +74,7 @@ public class VolleyData {
         try {
             RSAEncryptor rsaEncryptor = new RSAEncryptor(context, AESKey);
             EncryptedAESKey = rsaEncryptor.encryptData();
-        } catch (NoSuchPaddingException | InvalidKeyException | BadPaddingException e) {
-            e.printStackTrace();
-        } catch (IllegalBlockSizeException e) {
+        } catch (NoSuchPaddingException | InvalidKeyException | BadPaddingException | IllegalBlockSizeException e) {
             e.printStackTrace();
         }
 
@@ -89,25 +89,16 @@ public class VolleyData {
                 MyPubKey = new String(Base64.encode(publicKeyBytes, 0));
             }
 
-            encryptedData.put("data", encryptedText);
-            encryptedData.put("pubkey", MyPubKey);
             encryptedData.put("iv", IV);
             encryptedData.put("aeskey", EncryptedAESKey);
+            encryptedData.put("data", encryptedText);
+            encryptedData.put("pubkey", MyPubKey);
 
 
-        } catch (NoSuchAlgorithmException e) {
-            e.printStackTrace();
-        } catch (JSONException e) {
-            e.printStackTrace();
-        } catch (CertificateException e) {
-            e.printStackTrace();
-        } catch (KeyStoreException e) {
-            e.printStackTrace();
-        } catch (IOException e) {
+        } catch (NoSuchAlgorithmException | JSONException | CertificateException | KeyStoreException | IOException e) {
             e.printStackTrace();
         }
-        Log.d("encryptedText: ", encryptedText);
-        Log.d("encryptedData", String.valueOf(encryptedData));
+        Log.d("encryptedData", encryptedData.toString());
 
         return encryptedData;
     }
@@ -116,29 +107,37 @@ public class VolleyData {
         JSONObject JSONtosend = encryptData(dataToEncrypt);
         RequestQueue queue = Volley.newRequestQueue(context);
         sharedPreferences = context.getSharedPreferences(MainActivity.PREFERENCES_NAME, 0);
-        final String sharedPrefNodeIP = sharedPreferences.getString("nodeip", "");
+        final String sharedPrefNodeIP = sharedPreferences.getString("hosts", "");
         Log.d("sentjson", JSONtosend.toString());
         JsonObjectRequest jsonObjectRequest = new JsonObjectRequest(Request.Method.POST, sharedPrefNodeIP, JSONtosend, new Response.Listener<JSONObject>() {
             @Override
             public void onResponse(JSONObject response) {
-                Log.d("serverresponse", response.toString());
-                /*if(response.has("uuid")) {
-                    try {
-                        String uuid = response.getString("uuid");
-                        sharedPreferences = getApplicationContext().getSharedPreferences(MainActivity.PREFERENCES_NAME, 0);
-                        editor = sharedPreferences.edit();
-                        editor.putString(MainActivity.UUID, uuid);
-                        editor.apply();
-                    }
-                    catch (JSONException e) {
-                        e.printStackTrace();
-                    }
-                }*/
+                Log.d("volleydataresponse", response.toString());
+                if(response.toString().contains("OK")) {
+                    Toast.makeText(context, "Connected to node!", Toast.LENGTH_LONG).show();
+                }
             }
         }, new Response.ErrorListener() {
             @Override
             public void onErrorResponse(VolleyError error) {
-                VolleyLog.d("errorresponse", "Error: " + error.getMessage());
+                String body = "";
+                String statusCode = String.valueOf(error.networkResponse.statusCode);
+                JSONObject jsonObject = new JSONObject();
+                if(error.networkResponse.data!=null) {
+                    try {
+                        body = new String(error.networkResponse.data, "UTF-8");
+                        jsonObject = new JSONObject(body);
+                    } catch (UnsupportedEncodingException e) {
+                        e.printStackTrace();
+                    } catch (JSONException e) {
+                        e.printStackTrace();
+                    }
+                }
+                try {
+                    Toast.makeText(context, "Error: " + jsonObject.get("error"), Toast.LENGTH_LONG).show();
+                } catch (JSONException e) {
+                    e.printStackTrace();
+                }
             }
         }) {
             @Override
