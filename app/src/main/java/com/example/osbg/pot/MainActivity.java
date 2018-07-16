@@ -1,6 +1,8 @@
 package com.example.osbg.pot;
 
 import android.Manifest;
+import android.app.Activity;
+import android.bluetooth.BluetoothAdapter;
 import android.content.ClipData;
 import android.content.ClipboardManager;
 import android.content.Context;
@@ -9,16 +11,19 @@ import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
+import android.content.res.ColorStateList;
 import android.net.Uri;
 import android.net.wifi.WifiManager;
 import android.os.Build;
 import android.security.KeyPairGeneratorSpec;
+import android.support.design.widget.FloatingActionButton;
 import android.support.v4.app.ActivityCompat;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.telephony.TelephonyManager;
 import android.telephony.gsm.GsmCellLocation;
+import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 import android.widget.TextView;
@@ -44,6 +49,14 @@ import java.util.Calendar;
 
 import javax.security.auth.x500.X500Principal;
 
+import app.akexorcist.bluetotohspp.library.BluetoothSPP;
+import app.akexorcist.bluetotohspp.library.BluetoothState;
+import app.akexorcist.bluetotohspp.library.DeviceList;
+
+import static app.akexorcist.bluetotohspp.library.BluetoothState.EXTRA_DEVICE_ADDRESS;
+import static app.akexorcist.bluetotohspp.library.BluetoothState.REQUEST_ENABLE_BT;
+import static app.akexorcist.bluetotohspp.library.BluetoothState.STATE_CONNECTED;
+
 /**
  * MainActivity class when you open the app...
  */
@@ -63,8 +76,12 @@ public class MainActivity extends AppCompatActivity {
     private SharedPreferences sharedPreferences;
     private SharedPreferences.Editor editor;
 
+    public FloatingActionButton fab;
+
     private SharedPreferences passwordPreferences;
     private SharedPreferences loginPrefferences;
+
+    BluetoothSPP bt;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -82,15 +99,18 @@ public class MainActivity extends AppCompatActivity {
 
     @Override
     protected void onResume() {
+        super.onResume();
         registerReceiver(mWifiScanReceiver, new IntentFilter(
                 WifiManager.SCAN_RESULTS_AVAILABLE_ACTION));
-        super.onResume();
+
+
     }
 
     @Override
     protected void onStart() {
-        super.onStart();
         setContentView(R.layout.activity_main);
+
+        fab = findViewById(R.id.fab);
 
         TextView firstLogin = (TextView) findViewById(R.id.firstLogin);
 
@@ -160,6 +180,7 @@ public class MainActivity extends AppCompatActivity {
         final TelephonyManager telephonyManager = (TelephonyManager) getSystemService(Context.TELEPHONY_SERVICE);
         if (ActivityCompat.checkSelfPermission(MainActivity.this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(MainActivity.this, Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
             ActivityCompat.requestPermissions(MainActivity.this, new String[]{Manifest.permission.ACCESS_FINE_LOCATION}, 1);
+            ActivityCompat.requestPermissions(MainActivity.this, new String[]{Manifest.permission.BLUETOOTH, Manifest.permission.BLUETOOTH_ADMIN}, 1);
             return;
         } else {
             try {
@@ -184,10 +205,10 @@ public class MainActivity extends AppCompatActivity {
 
         //final WifiManager wifiManager = (WifiManager) getApplicationContext().getSystemService(WIFI_SERVICE);
 
-        Intent serviceIntent = new Intent(this, LocationService.class);
+        /*Intent serviceIntent = new Intent(this, LocationService.class);
         startService(serviceIntent);
         Intent serviceIntent2 = new Intent(this, AirplaneModeListenerService.class);
-        startService(serviceIntent2);
+        startService(serviceIntent2);*/
 
         Button messagesButton = (Button) findViewById(R.id.messagesButton);
         messagesButton.setOnClickListener(new View.OnClickListener() {
@@ -198,10 +219,151 @@ public class MainActivity extends AppCompatActivity {
             }
         });
 
-    }
+        bt = new BluetoothSPP(this);
+
+        if(!(bt.getServiceState() == STATE_CONNECTED)) {
+            fab.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    if (!bt.isBluetoothAvailable()) {
+                        Intent enableBtIntent = new Intent(BluetoothAdapter.ACTION_REQUEST_ENABLE);
+                        startActivityForResult(enableBtIntent, REQUEST_ENABLE_BT);
+                    }
+
+                    if (!bt.isBluetoothEnabled()) {
+                        Intent intent = new Intent(BluetoothAdapter.ACTION_REQUEST_ENABLE);
+                        startActivityForResult(intent, BluetoothState.REQUEST_ENABLE_BT);
+                    } else {
+                        if (!bt.isServiceAvailable()) {
+                            bt.setupService();
+                            bt.startService(BluetoothState.DEVICE_ANDROID);
+                        }
+                    }
+                    if(bt.isBluetoothAvailable() && bt.isBluetoothEnabled()){
+                        bt.setupService();
+                        bt.startService(BluetoothState.DEVICE_ANDROID);
+                        bt.setDeviceTarget(BluetoothState.DEVICE_OTHER);
+                        Intent intent = new Intent(MainActivity.this, DeviceList.class);
+                        startActivityForResult(intent, BluetoothState.REQUEST_CONNECT_DEVICE);
+                    }
+                }
+            });
+        } else {
+            fab.setBackgroundTintList(ColorStateList.valueOf(getResources().getColor(R.color.LightGreen)));
+            fab.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    bt.disconnect();
+                    fab.setBackgroundTintList(ColorStateList.valueOf(getResources().getColor(R.color.colorPrimary)));
+                    Toast.makeText(getApplicationContext(), "BT dev disconnencted!", Toast.LENGTH_SHORT).show();
+                }
+            });
+        }
+
+        bt.setOnDataReceivedListener(new BluetoothSPP.OnDataReceivedListener() {
+            public void onDataReceived(byte[] data, String message) {
+                Log.d("BT Recived", new String(data));
+                String resultString = new String(data);
+                if (checkIfHEX(resultString)) {
+                    JSONObject resultAsJSON = convertHEXtoJSON(resultString);
+                    JSONHandler jsonHandler = new JSONHandler(resultAsJSON, getApplicationContext());
+                    jsonHandler.processJSON();
+                } else {
+                    HashCalculator hashCalculator = new HashCalculator();
+                    try {
+                        if (hashCalculator.calculateMD5(resultString.substring(4, resultString.length())).equals(resultString.substring(0, 4))) {
+                            NodeConnector nodeConnector = new NodeConnector(getApplicationContext(), resultString);
+                            nodeConnector.saveAllSettings();
+                            nodeConnector.connectToNode();
+                        } else {
+                            showResultDialogue(resultString);
+                        }
+                    } catch (NoSuchAlgorithmException e) {
+                        e.printStackTrace();
+                    }
+                }
+
+            }
+        });
+
+        bt.setBluetoothConnectionListener(new BluetoothSPP.BluetoothConnectionListener() {
+            public void onDeviceDisconnected() {
+                Toast.makeText(getApplicationContext()
+                        , "BT Disconnected"
+                        , Toast.LENGTH_SHORT).show();
+            }
+
+            public void onDeviceConnectionFailed() {
+                Toast.makeText(getApplicationContext()
+                        , "BT Failed"
+                        , Toast.LENGTH_SHORT).show();
+            }
+
+            public void onDeviceConnected(String name, final String address) {
+                Toast.makeText(getApplicationContext()
+                        , "BT Connected : " + address
+                        , Toast.LENGTH_SHORT).show();
+                fab.setBackgroundTintList(ColorStateList.valueOf(getResources().getColor(R.color.LightGreen)));
+                fab.setOnClickListener(new View.OnClickListener() {
+                    @Override
+                    public void onClick(View v) {
+                        bt.disconnect();
+                        fab.setBackgroundTintList(ColorStateList.valueOf(getResources().getColor(R.color.colorPrimary)));
+                        Toast.makeText(getApplicationContext(), "BT dev disconnencted!", Toast.LENGTH_SHORT).show();
+                        fab.setOnClickListener(new View.OnClickListener() {
+                            @Override
+                            public void onClick(View v) {
+                                if (!bt.isBluetoothAvailable()) {
+                                    Intent enableBtIntent = new Intent(BluetoothAdapter.ACTION_REQUEST_ENABLE);
+                                    startActivityForResult(enableBtIntent, REQUEST_ENABLE_BT);
+                                }
+
+                                if (!bt.isBluetoothEnabled()) {
+                                    Intent intent = new Intent(BluetoothAdapter.ACTION_REQUEST_ENABLE);
+                                    startActivityForResult(intent, BluetoothState.REQUEST_ENABLE_BT);
+                                } else {
+                                    if (!bt.isServiceAvailable()) {
+                                        bt.setupService();
+                                        bt.startService(BluetoothState.DEVICE_ANDROID);
+                                    }
+                                }
+                                bt.setDeviceTarget(BluetoothState.DEVICE_OTHER);
+                                Intent intent = new Intent(MainActivity.this, DeviceList.class);
+                                startActivityForResult(intent, BluetoothState.REQUEST_CONNECT_DEVICE);
+                            }
+                        });
+                    }
+                });
+
+            }
+        });
+
+
+
+        super.onStart();
+        }
 
     @Override
-    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+    public void onActivityResult(int requestCode, int resultCode, Intent data) {
+        if(requestCode == BluetoothState.REQUEST_CONNECT_DEVICE) {
+            if(resultCode == Activity.RESULT_OK)
+                try {
+                    String mdevice = data.getStringExtra(EXTRA_DEVICE_ADDRESS);
+                    bt.connect(mdevice);
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
+        } else if(requestCode == BluetoothState.REQUEST_ENABLE_BT) {
+            if(resultCode == Activity.RESULT_OK) {
+                bt.setupService();
+                bt.startService(BluetoothState.DEVICE_ANDROID);
+            } else {
+                Toast.makeText(getApplicationContext()
+                        , "Bluetooth was not enabled."
+                        , Toast.LENGTH_SHORT).show();
+            }
+        }
+
         //We will get scan results here
         IntentResult result = IntentIntegrator.parseActivityResult(requestCode, resultCode, data);
         //check for null
@@ -209,8 +371,8 @@ public class MainActivity extends AppCompatActivity {
             if (result.getContents() == null) {
                 Toast.makeText(this, "Scan Cancelled", Toast.LENGTH_LONG).show();
             } else {
+                String resultString = result.getContents();
                 //process result contents
-                final String resultString = result.getContents();
                 if(checkIfHEX(resultString)) {
                     JSONObject resultAsJSON = convertHEXtoJSON(resultString);
                     JSONHandler jsonHandler = new JSONHandler(resultAsJSON, getApplicationContext());

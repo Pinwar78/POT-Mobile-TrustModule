@@ -6,6 +6,16 @@
     android:layout_height="match_parent"
     tools:context="com.example.osbg.pot.MainActivity">
 
+    <android.support.design.widget.FloatingActionButton
+        android:id="@+id/fab"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="end|bottom"
+        android:src="@android:drawable/stat_sys_data_bluetooth"
+        app:backgroundTint="@color/colorPrimary"
+        android:layout_margin="16dp"
+        android:layout_alignParentEnd="true"/>
+
     <ImageView
         android:id="@+id/potLogo"
         android:src="@mipmap/pot_logo"

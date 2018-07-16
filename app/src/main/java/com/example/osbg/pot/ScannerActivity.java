@@ -122,5 +122,4 @@ public class ScannerActivity extends AppCompatActivity implements
         onBackPressed();
         return true;
     }
-
 }

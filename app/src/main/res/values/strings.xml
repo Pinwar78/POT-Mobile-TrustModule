@@ -21,4 +21,5 @@
     <string name="turn_off_flashlight">FlashLight ON</string>
     <string name="turn_on_flashlight">FlashLight OFF</string>
     <string name="message">Place a QR Code inside the viewfinder rectangle to scan it.</string>
+    <string name="bt_connect">Connect BT device</string>
 </resources>
