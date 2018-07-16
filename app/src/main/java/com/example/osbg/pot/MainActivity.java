@@ -251,7 +251,7 @@ public class MainActivity extends AppCompatActivity {
         bt.setOnDataReceivedListener(new BluetoothSPP.OnDataReceivedListener() {
             public void onDataReceived(byte[] data, String message) {
                 Log.d("BT Recived", new String(data));
-                String resultString = new String(data);
+                final String resultString = new String(data);
                 if (checkIfHEX(resultString)) {
                     JSONObject resultAsJSON = convertHEXtoJSON(resultString);
                     JSONHandler jsonHandler = new JSONHandler(resultAsJSON, getApplicationContext());
@@ -363,7 +363,7 @@ public class MainActivity extends AppCompatActivity {
             if (result.getContents() == null) {
                 Toast.makeText(this, "Scan Cancelled", Toast.LENGTH_LONG).show();
             } else {
-                String resultString = result.getContents();
+                final String resultString = result.getContents();
                 //process result contents
                 if(checkIfHEX(resultString)) {
                     JSONObject resultAsJSON = convertHEXtoJSON(resultString);
