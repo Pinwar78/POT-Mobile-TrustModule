@@ -12,7 +12,7 @@
         android:layout_height="wrap_content"
         android:layout_gravity="end|bottom"
         android:src="@android:drawable/stat_sys_data_bluetooth"
-        app:backgroundTint="@color/colorPrimary"
+        app:backgroundTint="@color/Gray"
         android:layout_margin="16dp"
         android:layout_alignParentEnd="true"/>
 

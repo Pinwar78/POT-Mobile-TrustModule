@@ -81,7 +81,7 @@ public class MainActivity extends AppCompatActivity {
     private SharedPreferences passwordPreferences;
     private SharedPreferences loginPrefferences;
 
-    BluetoothSPP bt;
+    public final BluetoothSPP bt = new BluetoothSPP(MainActivity.this);
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -94,16 +94,6 @@ public class MainActivity extends AppCompatActivity {
             Intent intent = new Intent(this, CreateAccount.class);
             this.startActivity(intent);
         }
-    }
-
-
-    @Override
-    protected void onResume() {
-        super.onResume();
-        registerReceiver(mWifiScanReceiver, new IntentFilter(
-                WifiManager.SCAN_RESULTS_AVAILABLE_ACTION));
-
-
     }
 
     @Override
@@ -219,7 +209,9 @@ public class MainActivity extends AppCompatActivity {
             }
         });
 
-        bt = new BluetoothSPP(this);
+        if(bt.isBluetoothEnabled()){
+            fab.setBackgroundTintList(ColorStateList.valueOf(getResources().getColor(R.color.colorPrimary)));
+        }
 
         if(!(bt.getServiceState() == STATE_CONNECTED)) {
             fab.setOnClickListener(new View.OnClickListener() {
@@ -233,12 +225,8 @@ public class MainActivity extends AppCompatActivity {
                     if (!bt.isBluetoothEnabled()) {
                         Intent intent = new Intent(BluetoothAdapter.ACTION_REQUEST_ENABLE);
                         startActivityForResult(intent, BluetoothState.REQUEST_ENABLE_BT);
-                    } else {
-                        if (!bt.isServiceAvailable()) {
-                            bt.setupService();
-                            bt.startService(BluetoothState.DEVICE_ANDROID);
-                        }
                     }
+
                     if(bt.isBluetoothAvailable() && bt.isBluetoothEnabled()){
                         bt.setupService();
                         bt.startService(BluetoothState.DEVICE_ANDROID);
@@ -255,7 +243,7 @@ public class MainActivity extends AppCompatActivity {
                 public void onClick(View v) {
                     bt.disconnect();
                     fab.setBackgroundTintList(ColorStateList.valueOf(getResources().getColor(R.color.colorPrimary)));
-                    Toast.makeText(getApplicationContext(), "BT dev disconnencted!", Toast.LENGTH_SHORT).show();
+                    Toast.makeText(getApplicationContext(), "BT device disconnected!", Toast.LENGTH_SHORT).show();
                 }
             });
         }
@@ -282,7 +270,6 @@ public class MainActivity extends AppCompatActivity {
                         e.printStackTrace();
                     }
                 }
-
             }
         });
 
@@ -291,6 +278,7 @@ public class MainActivity extends AppCompatActivity {
                 Toast.makeText(getApplicationContext()
                         , "BT Disconnected"
                         , Toast.LENGTH_SHORT).show();
+                fab.setBackgroundTintList(ColorStateList.valueOf(getResources().getColor(R.color.colorPrimary)));
             }
 
             public void onDeviceConnectionFailed() {
@@ -309,7 +297,6 @@ public class MainActivity extends AppCompatActivity {
                     public void onClick(View v) {
                         bt.disconnect();
                         fab.setBackgroundTintList(ColorStateList.valueOf(getResources().getColor(R.color.colorPrimary)));
-                        Toast.makeText(getApplicationContext(), "BT dev disconnencted!", Toast.LENGTH_SHORT).show();
                         fab.setOnClickListener(new View.OnClickListener() {
                             @Override
                             public void onClick(View v) {
@@ -321,15 +308,15 @@ public class MainActivity extends AppCompatActivity {
                                 if (!bt.isBluetoothEnabled()) {
                                     Intent intent = new Intent(BluetoothAdapter.ACTION_REQUEST_ENABLE);
                                     startActivityForResult(intent, BluetoothState.REQUEST_ENABLE_BT);
-                                } else {
-                                    if (!bt.isServiceAvailable()) {
-                                        bt.setupService();
-                                        bt.startService(BluetoothState.DEVICE_ANDROID);
-                                    }
                                 }
-                                bt.setDeviceTarget(BluetoothState.DEVICE_OTHER);
-                                Intent intent = new Intent(MainActivity.this, DeviceList.class);
-                                startActivityForResult(intent, BluetoothState.REQUEST_CONNECT_DEVICE);
+
+                                if(bt.isBluetoothAvailable() && bt.isBluetoothEnabled()){
+                                    bt.setupService();
+                                    bt.startService(BluetoothState.DEVICE_ANDROID);
+                                    bt.setDeviceTarget(BluetoothState.DEVICE_OTHER);
+                                    Intent intent = new Intent(MainActivity.this, DeviceList.class);
+                                    startActivityForResult(intent, BluetoothState.REQUEST_CONNECT_DEVICE);
+                                }
                             }
                         });
                     }
@@ -337,11 +324,15 @@ public class MainActivity extends AppCompatActivity {
 
             }
         });
-
-
-
         super.onStart();
         }
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+        registerReceiver(mWifiScanReceiver, new IntentFilter(
+                WifiManager.SCAN_RESULTS_AVAILABLE_ACTION));
+    }
 
     @Override
     public void onActivityResult(int requestCode, int resultCode, Intent data) {
@@ -357,6 +348,7 @@ public class MainActivity extends AppCompatActivity {
             if(resultCode == Activity.RESULT_OK) {
                 bt.setupService();
                 bt.startService(BluetoothState.DEVICE_ANDROID);
+                fab.setBackgroundTintList(ColorStateList.valueOf(getResources().getColor(R.color.colorPrimary)));
             } else {
                 Toast.makeText(getApplicationContext()
                         , "Bluetooth was not enabled."
