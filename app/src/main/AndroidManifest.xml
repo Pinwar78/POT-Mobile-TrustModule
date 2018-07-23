@@ -56,14 +56,11 @@
         <activity
             android:name=".DappActivity"
             android:theme="@style/Theme.AppCompat.Light.NoActionBar" />
+        <activity android:name=".InviteActivity" />
 
         <service
             android:name=".LocationService"
             android:exported="false" />
-        <service
-            android:name=".AirplaneModeListenerService"
-            android:exported="false" />
-
     </application>
 
 </manifest>

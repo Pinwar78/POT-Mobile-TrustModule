@@ -61,8 +61,13 @@ public class NodeConnector {
             host = nodeData.substring(256, nodeData.length());
             sharedPreferences = context.getSharedPreferences(MainActivity.PREFERENCES_NAME, 0);
             editor = sharedPreferences.edit();
-            editor.putString(MainActivity.HOSTST, "http://"+host);
-            editor.apply();
+            if(!host.contains("http://")) {
+                editor.putString(MainActivity.HOSTST, "http://" + host);
+                editor.apply();
+            } else {
+                editor.putString(MainActivity.HOSTST, host);
+                editor.apply();
+            }
             Log.d("getsavedthings", sharedPreferences.getString("hosts", ""));
     }
 

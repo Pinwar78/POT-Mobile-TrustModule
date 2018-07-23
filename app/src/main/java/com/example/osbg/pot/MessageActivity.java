@@ -30,7 +30,7 @@ public class MessageActivity extends AppCompatActivity {
         toolbarReceivedMessagesTitle.setText("Received Messages");
 
         mMessageRecycler = (RecyclerView) findViewById(R.id.recyclerview_message_list);
-        mMessageAdapter = new MessageListAdapter(this, LocationService.notificationsList);
+        mMessageAdapter = new MessageListAdapter(this, LocationAsyncTask.notificationsList);
         mMessageRecycler.setLayoutManager(new LinearLayoutManager(this));
         mMessageRecycler.setAdapter(mMessageAdapter);
     }
@@ -54,8 +54,13 @@ public class MessageActivity extends AppCompatActivity {
     public boolean onOptionsItemSelected(MenuItem item) {
         switch (item.getItemId()) {
             case R.id.clear_all:
-                LocationService.notificationsList.clear();
+                LocationAsyncTask.notificationsList.clear();
                 mMessageAdapter.notifyDataSetChanged();
+                break;
+            case R.id.invite:
+                Intent intent = new Intent(this, InviteActivity.class);
+                startActivity(intent);
+                break;
         }
         return super.onOptionsItemSelected(item);
     }

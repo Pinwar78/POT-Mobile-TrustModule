@@ -55,7 +55,6 @@ import app.akexorcist.bluetotohspp.library.DeviceList;
 
 import static app.akexorcist.bluetotohspp.library.BluetoothState.EXTRA_DEVICE_ADDRESS;
 import static app.akexorcist.bluetotohspp.library.BluetoothState.REQUEST_ENABLE_BT;
-import static app.akexorcist.bluetotohspp.library.BluetoothState.STATE_CONNECTED;
 
 /**
  * MainActivity class when you open the app...
@@ -163,6 +162,25 @@ public class MainActivity extends AppCompatActivity {
             @Override
             public void onClick(View v) {
                 new IntentIntegrator(MainActivity.this).setCaptureActivity(ScannerActivity.class).initiateScan();
+                /*final String resultString = "d7bb1B099E74-8A54-11E8-892B-76327CE7F85DMIGfMA0GCSqGSIb3DQEBAQUAA4GNADCBiQKBgQC/gvSv1/86cYbULBXn7HvKf9qn8IvrV48XIosdgicU6Cv5edacHjOopt4EvjqUVivUa0TQYX1Dt/xcA5+IWQcj6DCSGeIGaynF2uKTr0KWBq9IpR1eV/Dt1S/StJZaX0hqj9ypNSNfts2NUk4DiFXWw+NrsiLEvN8k8/qhtJ74wQIDAQAB10.10.40.174:9090/device/new";
+                if (checkIfHEX(resultString)) {
+                    JSONObject resultAsJSON = convertHEXtoJSON(resultString);
+                    JSONHandler jsonHandler = new JSONHandler(resultAsJSON, getApplicationContext());
+                    jsonHandler.processJSON();
+                } else {
+                    HashCalculator hashCalculator = new HashCalculator();
+                    try {
+                        if (hashCalculator.calculateMD5(resultString.substring(4, resultString.length())).equals(resultString.substring(0, 4))) {
+                            NodeConnector nodeConnector = new NodeConnector(getApplicationContext(), resultString);
+                            nodeConnector.saveAllSettings();
+                            nodeConnector.connectToNode();
+                        } else {
+                            showResultDialogue(resultString);
+                        }
+                    } catch (Exception e) {
+                        e.printStackTrace();
+                    }
+                }*/
             }
         });
 
@@ -193,12 +211,8 @@ public class MainActivity extends AppCompatActivity {
             }
         }
 
-        //final WifiManager wifiManager = (WifiManager) getApplicationContext().getSystemService(WIFI_SERVICE);
-
-        /*Intent serviceIntent = new Intent(this, LocationService.class);
+        Intent serviceIntent = new Intent(this, LocationService.class);
         startService(serviceIntent);
-        Intent serviceIntent2 = new Intent(this, AirplaneModeListenerService.class);
-        startService(serviceIntent2);*/
 
         Button messagesButton = (Button) findViewById(R.id.messagesButton);
         messagesButton.setOnClickListener(new View.OnClickListener() {
@@ -209,7 +223,7 @@ public class MainActivity extends AppCompatActivity {
             }
         });
 
-        if(bt.isBluetoothEnabled()){
+        /*if(bt.isBluetoothEnabled()){
             fab.setBackgroundTintList(ColorStateList.valueOf(getResources().getColor(R.color.colorPrimary)));
         }
 
@@ -246,11 +260,12 @@ public class MainActivity extends AppCompatActivity {
                     Toast.makeText(getApplicationContext(), "BT device disconnected!", Toast.LENGTH_SHORT).show();
                 }
             });
-        }
+        }*/
 
         bt.setOnDataReceivedListener(new BluetoothSPP.OnDataReceivedListener() {
             public void onDataReceived(byte[] data, String message) {
-                Log.d("BT Recived", new String(data));
+                Toast.makeText(getApplicationContext(), "OK", Toast.LENGTH_SHORT).show();
+                Log.d("BT Received", new String(data));
                 final String resultString = new String(data);
                 if (checkIfHEX(resultString)) {
                     JSONObject resultAsJSON = convertHEXtoJSON(resultString);
@@ -266,7 +281,7 @@ public class MainActivity extends AppCompatActivity {
                         } else {
                             showResultDialogue(resultString);
                         }
-                    } catch (NoSuchAlgorithmException e) {
+                    } catch (Exception e) {
                         e.printStackTrace();
                     }
                 }
@@ -279,6 +294,28 @@ public class MainActivity extends AppCompatActivity {
                         , "BT Disconnected"
                         , Toast.LENGTH_SHORT).show();
                 fab.setBackgroundTintList(ColorStateList.valueOf(getResources().getColor(R.color.colorPrimary)));
+                fab.setOnClickListener(new View.OnClickListener() {
+                    @Override
+                    public void onClick(View v) {
+                        if (!bt.isBluetoothAvailable()) {
+                            Intent enableBtIntent = new Intent(BluetoothAdapter.ACTION_REQUEST_ENABLE);
+                            startActivityForResult(enableBtIntent, REQUEST_ENABLE_BT);
+                        }
+
+                        if (!bt.isBluetoothEnabled()) {
+                            Intent intent = new Intent(BluetoothAdapter.ACTION_REQUEST_ENABLE);
+                            startActivityForResult(intent, BluetoothState.REQUEST_ENABLE_BT);
+                        }
+
+                        if(bt.isBluetoothAvailable() && bt.isBluetoothEnabled()){
+                            bt.setupService();
+                            bt.startService(BluetoothState.DEVICE_ANDROID);
+                            bt.setDeviceTarget(BluetoothState.DEVICE_OTHER);
+                            Intent intent = new Intent(MainActivity.this, DeviceList.class);
+                            startActivityForResult(intent, BluetoothState.REQUEST_CONNECT_DEVICE);
+                        }
+                    }
+                });
             }
 
             public void onDeviceConnectionFailed() {
@@ -296,29 +333,6 @@ public class MainActivity extends AppCompatActivity {
                     @Override
                     public void onClick(View v) {
                         bt.disconnect();
-                        fab.setBackgroundTintList(ColorStateList.valueOf(getResources().getColor(R.color.colorPrimary)));
-                        fab.setOnClickListener(new View.OnClickListener() {
-                            @Override
-                            public void onClick(View v) {
-                                if (!bt.isBluetoothAvailable()) {
-                                    Intent enableBtIntent = new Intent(BluetoothAdapter.ACTION_REQUEST_ENABLE);
-                                    startActivityForResult(enableBtIntent, REQUEST_ENABLE_BT);
-                                }
-
-                                if (!bt.isBluetoothEnabled()) {
-                                    Intent intent = new Intent(BluetoothAdapter.ACTION_REQUEST_ENABLE);
-                                    startActivityForResult(intent, BluetoothState.REQUEST_ENABLE_BT);
-                                }
-
-                                if(bt.isBluetoothAvailable() && bt.isBluetoothEnabled()){
-                                    bt.setupService();
-                                    bt.startService(BluetoothState.DEVICE_ANDROID);
-                                    bt.setDeviceTarget(BluetoothState.DEVICE_OTHER);
-                                    Intent intent = new Intent(MainActivity.this, DeviceList.class);
-                                    startActivityForResult(intent, BluetoothState.REQUEST_CONNECT_DEVICE);
-                                }
-                            }
-                        });
                     }
                 });
 

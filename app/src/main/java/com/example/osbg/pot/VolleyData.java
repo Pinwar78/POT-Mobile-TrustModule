@@ -40,6 +40,7 @@ import javax.crypto.NoSuchPaddingException;
 public class VolleyData {
     private Context context;
     private SharedPreferences sharedPreferences;
+    private RequestQueue queue;
 
     public VolleyData(Context context) {
         this.context = context;
@@ -105,9 +106,13 @@ public class VolleyData {
 
     public void sendDataToNode(String dataToEncrypt) throws NoSuchAlgorithmException {
         JSONObject JSONtosend = encryptData(dataToEncrypt);
-        RequestQueue queue = Volley.newRequestQueue(context);
+        if(queue == null) {
+            queue = Volley.newRequestQueue(context);
+        }
         sharedPreferences = context.getSharedPreferences(MainActivity.PREFERENCES_NAME, 0);
         final String sharedPrefNodeIP = sharedPreferences.getString("hosts", "");
+        //final String sharedPrefNodeIP = "http://10.10.40.174:9090/device/ping";
+
         Log.d("sentjson", JSONtosend.toString());
         JsonObjectRequest jsonObjectRequest = new JsonObjectRequest(Request.Method.POST, sharedPrefNodeIP, JSONtosend, new Response.Listener<JSONObject>() {
             @Override
@@ -115,6 +120,18 @@ public class VolleyData {
                 Log.d("volleydataresponse", response.toString());
                 if(response.toString().contains("OK")) {
                     Toast.makeText(context, "Connected to node!", Toast.LENGTH_SHORT).show();
+                }
+                try {
+                    /*
+                    aes, iv and data decrypt - working!
+                    RSADecryptor rsaDecryptor = new RSADecryptor();
+                    rsaDecryptor.decryptData(response.getString("aeskey")
+                    response.getString("iv")
+                    AESDecryptor aesDecryptor = new AESDecryptor(response.getString("iv"), rsaDecryptor.decryptData(response.getString("aeskey")));
+                    aesDecryptor.decryptAESData(response.getString("data")));
+                    */
+                } catch (Exception e) {
+                    e.printStackTrace();
                 }
             }
         }, new Response.ErrorListener() {

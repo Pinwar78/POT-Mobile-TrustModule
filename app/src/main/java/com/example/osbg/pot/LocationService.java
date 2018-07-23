@@ -3,53 +3,20 @@ package com.example.osbg.pot;
 import android.app.IntentService;
 import android.content.Context;
 import android.content.Intent;
-import android.content.IntentFilter;
-import android.content.SharedPreferences;
-import android.net.wifi.WifiManager;
-import android.os.Build;
 import android.os.Handler;
+import android.provider.Settings;
 import android.support.annotation.Nullable;
-import android.telephony.TelephonyManager;
 import android.util.Log;
-
-import com.android.volley.AuthFailureError;
-import com.android.volley.Request;
-import com.android.volley.RequestQueue;
-import com.android.volley.Response;
-import com.android.volley.VolleyError;
-import com.android.volley.VolleyLog;
-import com.android.volley.toolbox.JsonObjectRequest;
-import com.android.volley.toolbox.Volley;
-
-import org.json.JSONException;
-import org.json.JSONObject;
-
-import java.text.SimpleDateFormat;
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.Map;
+import java.util.Timer;
+import java.util.TimerTask;
 
 /**
- * LocationService class that keeps running in the background, until the phone's AIRPLANE MODE IS NOT TURNED ON,
- * AIRPLANE MODE is ON = service not working,
- * AIRPLANE MODE is OFF = service running,
- * On location change = send hashes with the new location to server...
+ * LocationService class that keeps running in the background,
+ * On location change = send hashes with the new location to server if AIRPLANE MODE IS NOT TURNED ON...
  */
 
 public class LocationService extends IntentService {
     private final Handler handler = new Handler();
-    private WifiManager mWifiManager;
-    private WifiReceiver mWifiScanReceiver;
-
-    private JSONObject cellJSON = new JSONObject();
-    private JSONObject new_locationJSON = new JSONObject();
-
-    private SharedPreferences sharedPreferences;
-    private SharedPreferences.Editor editor;
-
-    public static ArrayList<ReceivedMessage> notificationsList = new ArrayList<>();
-
     public LocationService() {
         super("LocationService");
     }
@@ -62,84 +29,26 @@ public class LocationService extends IntentService {
     //CAN BE ONLY FORCE CLOSED :)
     @Override
     public int onStartCommand(@Nullable Intent intent, int flags, int startId) {
-        doInback();
-        return START_STICKY;
-    }
-
-    public void doInback() {
-        handler.postDelayed(new Runnable() {
-
+        Timer timer = new Timer();
+        TimerTask locationAsyncTask = new TimerTask() {
             @Override
             public void run() {
-                // TODO Auto-generated method stub
-                mWifiManager = (WifiManager) getApplicationContext().getSystemService(Context.WIFI_SERVICE);
-                mWifiScanReceiver = new WifiReceiver();
-                getApplicationContext().registerReceiver(mWifiScanReceiver, new IntentFilter(
-                        WifiManager.SCAN_RESULTS_AVAILABLE_ACTION));
-                mWifiManager.startScan();
-
-
-
-                CellReceiver cellReceiver = new CellReceiver(getApplicationContext());
-                cellReceiver.saveCellID();
-                cellJSON = cellReceiver.myCellJSON;
-
-                TelephonyManager telephonyManager = (TelephonyManager) getApplicationContext().getSystemService(Context.TELEPHONY_SERVICE);
-
-                sharedPreferences = getApplicationContext().getSharedPreferences(MainActivity.PREFERENCES_NAME, 0);
-
-                if(CellReceiver.isCellChanged && WifiReceiver.isWifiChanged) {
-                    new_locationJSON = new JSONObject();
-                    try {
-                        new_locationJSON.put("cell", cellJSON);
-                        new_locationJSON.put("wifi", WifiReceiver.myWIFIJSON);
-                        new_locationJSON.put("device", (Build.MANUFACTURER + " " + Build.PRODUCT + " " + Build.VERSION.RELEASE + " " + telephonyManager.getNetworkOperatorName()));
-                        if(sharedPreferences.contains("uuid")){
-                            new_locationJSON.put("uuid", sharedPreferences.getString(MainActivity.UUID, null));
-                        }
-                        postJSONObject();
-                        CellReceiver.isCellChanged = false;
-                        WifiReceiver.isWifiChanged = false;
-                    } catch (JSONException e) {
-                        e.printStackTrace();
-                    }
-                }
-
-                else if(CellReceiver.isCellChanged) {
-                    new_locationJSON = new JSONObject();
-                    try {
-                        new_locationJSON.put("cell", cellJSON);
-                        new_locationJSON.put("wifi", WifiReceiver.myWIFIJSON);
-                        new_locationJSON.put("device", (Build.MANUFACTURER + " " + Build.PRODUCT + " " + Build.VERSION.RELEASE + " " + telephonyManager.getNetworkOperatorName()));
-                        if(sharedPreferences.contains("uuid")){
-                            new_locationJSON.put("uuid", sharedPreferences.getString(MainActivity.UUID, null));
-                        }
-                        postJSONObject();
-                        CellReceiver.isCellChanged = false;
-                    } catch (JSONException e) {
-                        e.printStackTrace();
-                    }
-                }
-                    else if(WifiReceiver.isWifiChanged) {
-                        new_locationJSON = new JSONObject();
-                        try {
-                            new_locationJSON.put("cell", cellJSON);
-                            new_locationJSON.put("wifi", WifiReceiver.myWIFIJSON);
-                            new_locationJSON.put("device", (Build.MANUFACTURER + " " + Build.PRODUCT + " " + Build.VERSION.RELEASE + " " + telephonyManager.getNetworkOperatorName()));
-                            if(sharedPreferences.contains("uuid")){
-                                new_locationJSON.put("uuid", sharedPreferences.getString(MainActivity.UUID, null));
+                if (!isAirplaneModeOn(getApplicationContext())) {
+                    handler.post(new Runnable() {
+                        @Override
+                        public void run() {
+                            try {
+                                new LocationAsyncTask(getApplicationContext()).execute();
+                            } catch (Exception e) {
+                                e.printStackTrace();
                             }
-                            postJSONObject();
-                            WifiReceiver.isWifiChanged = false;
-                        } catch (JSONException e) {
-                            e.printStackTrace();
                         }
+                    });
                 }
-
-                doInback();
             }
-        }, 3000);
-
+        };
+        timer.schedule(locationAsyncTask, 0, 10000);
+        return START_STICKY;
     }
 
     @Override
@@ -150,58 +59,8 @@ public class LocationService extends IntentService {
         super.onDestroy();
     }
 
-    public void postJSONObject() {
-        RequestQueue queue = Volley.newRequestQueue(getApplicationContext());
-        final String url = "http://trusttest.processofthings.io:9070/node/trust";
-        Log.d("sentjson", new_locationJSON.toString());
-        JsonObjectRequest jsonObjectRequest = new JsonObjectRequest(Request.Method.POST, url, new_locationJSON, new Response.Listener<JSONObject>() {
-            @Override
-            public void onResponse(JSONObject response) {
-                Log.d("serverresponse", response.toString());
-                NotificationHandler notification = new NotificationHandler(getApplicationContext());
-                if (response.has("message")) {
-                    if (response.has("notification")) {
-                        try {
-                            String currentTime = new SimpleDateFormat("HH:mm:ss").format(new Date());
-                            String subject = response.getJSONObject("notification").getString("subject");
-                            String message = response.getJSONObject("notification").getString("message");
-
-                            ReceivedMessage newReceivedMessage = new ReceivedMessage(subject, message, currentTime);
-                            notificationsList.add(newReceivedMessage);
-
-                            notification.sendNotification(subject, message);
-                        } catch (JSONException e) {
-                            e.printStackTrace();
-                        }
-                    }
-                }
-                /*if(response.has("uuid")) {
-                    try {
-                        String uuid = response.getString("uuid");
-                        sharedPreferences = getApplicationContext().getSharedPreferences(MainActivity.PREFERENCES_NAME, 0);
-                        editor = sharedPreferences.edit();
-                        editor.putString(MainActivity.UUID, uuid);
-                        editor.apply();
-                    }
-                    catch (JSONException e) {
-                        e.printStackTrace();
-                    }
-                }*/
-            }
-        }, new Response.ErrorListener() {
-            @Override
-            public void onErrorResponse(VolleyError error) {
-                VolleyLog.d("errorresponse", "Error: " + error.getMessage());
-            }
-        }) {
-            @Override
-            public Map<String, String> getHeaders() throws AuthFailureError {
-                HashMap<String, String> headers = new HashMap<String, String>();
-                headers.put("Content-Type", "application/json; charset=utf-8");
-                return headers;
-            }
-        };
-        jsonObjectRequest.setTag("myjsonobjrequest");
-        queue.add(jsonObjectRequest);
+    private boolean isAirplaneModeOn(Context context) {
+        return Settings.System.getInt(context.getContentResolver(),
+                Settings.Global.AIRPLANE_MODE_ON, 0) != 0;
     }
 }

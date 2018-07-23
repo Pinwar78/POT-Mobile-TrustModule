@@ -12,7 +12,7 @@
             android:id="@+id/log_in_toolbar"
             android:layout_width="match_parent"
             android:layout_height="?attr/actionBarSize"
-            android:background="@color/colorPrimaryDark"
+            android:background="@color/colorPrimary"
             android:elevation="4dp"
             android:theme="@style/ToolbarColoredBackArrow"
             app:popupTheme="@style/AppTheme">

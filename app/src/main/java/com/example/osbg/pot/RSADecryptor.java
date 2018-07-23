@@ -16,11 +16,9 @@ import javax.crypto.CipherInputStream;
 
 public class RSADecryptor {
     private final String ALGORITHM = "RSA/ECB/PKCS1Padding";
-    private Context context;
     private String decryptedText = "";
 
-    public RSADecryptor(Context context) {
-        this.context = context;
+    public RSADecryptor() {
     }
 
     public String decryptData(String dataToDecrypt) {
@@ -48,7 +46,7 @@ public class RSADecryptor {
 
             decryptedText = new String(bytes, 0, bytes.length, "UTF-8");
         } catch (Exception e) {
-            Toast.makeText(context, "Exception " + e.getMessage() + " occured", Toast.LENGTH_LONG).show();
+            e.printStackTrace();
         }
         return decryptedText;
     }

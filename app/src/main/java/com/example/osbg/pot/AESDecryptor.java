@@ -8,12 +8,10 @@ import javax.crypto.spec.IvParameterSpec;
 import javax.crypto.spec.SecretKeySpec;
 
 public class AESDecryptor {
-    private Context context;
     private String IV = "";
     private String decryptedAESKey = "";
 
-    public AESDecryptor(Context context, String IV, String decryptedAESKey) {
-        this.context = context;
+    public AESDecryptor(String IV, String decryptedAESKey) {
         this.IV = IV;
         this.decryptedAESKey = decryptedAESKey;
     }
