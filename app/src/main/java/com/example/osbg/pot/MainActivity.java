@@ -72,6 +72,7 @@ public class MainActivity extends AppCompatActivity {
     public static final String ALIAS = "potkeys";
     public static final String NODE_PUB_KEY = "nodepubkey";
     public static final String HOSTST = "hosts";
+    public static final String CONTACT_ID = "contactid";
     private SharedPreferences sharedPreferences;
     private SharedPreferences.Editor editor;
 
@@ -211,14 +212,14 @@ public class MainActivity extends AppCompatActivity {
             }
         }
 
-        Intent serviceIntent = new Intent(this, LocationService.class);
-        startService(serviceIntent);
+        /*Intent serviceIntent = new Intent(this, LocationService.class);
+        startService(serviceIntent);*/
 
         Button messagesButton = (Button) findViewById(R.id.messagesButton);
         messagesButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                Intent intent = new Intent(getApplicationContext(), MessageActivity.class);
+                Intent intent = new Intent(getApplicationContext(), ContactsActivity.class);
                 startActivity(intent);
             }
         });
@@ -451,6 +452,10 @@ public class MainActivity extends AppCompatActivity {
         } catch (KeyStoreException | NoSuchAlgorithmException | NoSuchProviderException | InvalidAlgorithmParameterException | CertificateException | IOException e) {
             e.printStackTrace();
         }
+    }
+
+    private void generateContactID() {
+
     }
 
     public void showResultDialogue(final String result) {

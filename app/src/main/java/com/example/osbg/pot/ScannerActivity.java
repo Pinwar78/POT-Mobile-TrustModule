@@ -13,7 +13,7 @@ import com.journeyapps.barcodescanner.DecoratedBarcodeView;
 public class ScannerActivity extends AppCompatActivity implements
         DecoratedBarcodeView.TorchListener {
 
-    private CaptureManager capture;
+    private CustomCaptureManager capture;
     private DecoratedBarcodeView barcodeScannerView;
     private Button switchFlashlightButton;
     private boolean isFlashLightOn = false;
@@ -51,7 +51,7 @@ public class ScannerActivity extends AppCompatActivity implements
         }
 
         //start capture
-        capture = new CaptureManager(this, barcodeScannerView);
+        capture = new CustomCaptureManager(this, barcodeScannerView);
         capture.initializeFromIntent(getIntent(), savedInstanceState);
         capture.decode();
     }

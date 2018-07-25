@@ -104,7 +104,11 @@ public class VolleyData {
         return encryptedData;
     }
 
-    public void sendDataToNode(String dataToEncrypt) throws NoSuchAlgorithmException {
+    public void sendDataToNode(String dataToEcrypt) throws NoSuchAlgorithmException {
+        sendDataToNode(dataToEcrypt, Request.Method.POST);
+    }
+
+    public void sendDataToNode(String dataToEncrypt, int method) throws NoSuchAlgorithmException {
         JSONObject JSONtosend = encryptData(dataToEncrypt);
         if(queue == null) {
             queue = Volley.newRequestQueue(context);
@@ -114,7 +118,7 @@ public class VolleyData {
         //final String sharedPrefNodeIP = "http://10.10.40.174:9090/device/ping";
 
         Log.d("sentjson", JSONtosend.toString());
-        JsonObjectRequest jsonObjectRequest = new JsonObjectRequest(Request.Method.POST, sharedPrefNodeIP, JSONtosend, new Response.Listener<JSONObject>() {
+        JsonObjectRequest jsonObjectRequest = new JsonObjectRequest(method, sharedPrefNodeIP, JSONtosend, new Response.Listener<JSONObject>() {
             @Override
             public void onResponse(JSONObject response) {
                 Log.d("volleydataresponse", response.toString());
