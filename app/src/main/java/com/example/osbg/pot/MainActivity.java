@@ -29,6 +29,17 @@ import android.widget.Button;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.example.osbg.pot.activities.CreateAccount;
+import com.example.osbg.pot.activities.LogInActivity;
+import com.example.osbg.pot.activities.ScannerActivity;
+import com.example.osbg.pot.infrastructure.NodeConnector;
+import com.example.osbg.pot.infrastructure.WifiReceiver;
+import com.example.osbg.pot.ui.messaging.MessageListActivity;
+import com.example.osbg.pot.services.LocationService;
+import com.example.osbg.pot.services.MessagingService;
+import com.example.osbg.pot.utilities.HashCalculator;
+import com.example.osbg.pot.utilities.JSONHandler;
+import com.example.osbg.pot.utilities.encryption.HexHelper;
 import com.google.zxing.integration.android.IntentIntegrator;
 import com.google.zxing.integration.android.IntentResult;
 
@@ -97,6 +108,7 @@ public class MainActivity extends AppCompatActivity {
 
     @Override
     protected void onStart() {
+        super.onStart();
         setContentView(R.layout.activity_main);
 
         fab = findViewById(R.id.fab);
@@ -218,7 +230,7 @@ public class MainActivity extends AppCompatActivity {
         messagesButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                Intent intent = new Intent(getApplicationContext(), MessageActivity.class);
+                Intent intent = new Intent(getApplicationContext(), MessageListActivity.class);
                 startActivity(intent);
             }
         });
@@ -267,8 +279,8 @@ public class MainActivity extends AppCompatActivity {
                 Toast.makeText(getApplicationContext(), "OK", Toast.LENGTH_SHORT).show();
                 Log.d("BT Received", new String(data));
                 final String resultString = new String(data);
-                if (checkIfHEX(resultString)) {
-                    JSONObject resultAsJSON = convertHEXtoJSON(resultString);
+                if (HexHelper.checkIfHEX(resultString)) {
+                    JSONObject resultAsJSON = HexHelper.convertHEXtoJSON(resultString);
                     JSONHandler jsonHandler = new JSONHandler(resultAsJSON, getApplicationContext());
                     jsonHandler.processJSON();
                 } else {
@@ -379,8 +391,8 @@ public class MainActivity extends AppCompatActivity {
             } else {
                 final String resultString = result.getContents();
                 //process result contents
-                if(checkIfHEX(resultString)) {
-                    JSONObject resultAsJSON = convertHEXtoJSON(resultString);
+                if(HexHelper.checkIfHEX(resultString)) {
+                    JSONObject resultAsJSON = HexHelper.convertHEXtoJSON(resultString);
                     JSONHandler jsonHandler = new JSONHandler(resultAsJSON, getApplicationContext());
                     jsonHandler.processJSON();
                 }
@@ -392,6 +404,8 @@ public class MainActivity extends AppCompatActivity {
                             NodeConnector nodeConnector = new NodeConnector(getApplicationContext(), resultString);
                             nodeConnector.saveAllSettings();
                             nodeConnector.connectToNode();
+                            Intent messagingIntent = new Intent(this, MessagingService.class);
+                            startService(messagingIntent);
                         }
                         else {
                             showResultDialogue(resultString);
@@ -405,27 +419,6 @@ public class MainActivity extends AppCompatActivity {
             // This is important, otherwise the result will not be passed to the fragment
             super.onActivityResult(requestCode, resultCode, data);
         }
-    }
-
-    private boolean checkIfHEX(String s) {
-        if (s.matches("^[0-9A-Fa-f]+$") && !(s.matches("\\d+"))) {
-            return true;
-        } else return false;
-    }
-
-    private JSONObject convertHEXtoJSON(String hexString) {
-        StringBuilder QRCode = new StringBuilder("");
-        for (int i = 0; i < hexString.length(); i += 2) {
-            String str = hexString.substring(i, i + 2);
-            QRCode.append((char) Integer.parseInt(str, 16));
-        }
-        try {
-            JSONObject resultAsJSON = new JSONObject(QRCode.toString());
-            return resultAsJSON;
-        } catch (JSONException e) {
-            e.printStackTrace();
-        }
-        return null;
     }
 
     private void generateKeys() {

@@ -3,6 +3,7 @@
   <component name="ProjectModuleManager">
     <modules>
       <module fileurl="file://$PROJECT_DIR$/POT.iml" filepath="$PROJECT_DIR$/POT.iml" />
+      <module fileurl="file://$PROJECT_DIR$/POT-Mobile-TrustModule.iml" filepath="$PROJECT_DIR$/POT-Mobile-TrustModule.iml" />
       <module fileurl="file://$PROJECT_DIR$/app/app.iml" filepath="$PROJECT_DIR$/app/app.iml" />
     </modules>
   </component>
