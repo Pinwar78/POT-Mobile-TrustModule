@@ -4,8 +4,8 @@ import com.example.osbg.pot.infrastructure.db.entities.MessageEntity;
 
 public class SentMessage extends Message{
 
-    public SentMessage(Contact sender, String text, String time) {
-        super(sender, text, time);
+    public SentMessage(String seqno, String contactKey, String text, String time) {
+        super(seqno, contactKey, text, time);
     }
     public SentMessage(MessageEntity messageEntity) {
         super(messageEntity);

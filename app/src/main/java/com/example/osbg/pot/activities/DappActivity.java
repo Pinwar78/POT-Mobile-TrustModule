@@ -17,8 +17,8 @@ public class DappActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.dapp_activity);
 
-        mWebView = (WebView) findViewById(R.id.webview);
-        mContainer = (RelativeLayout) findViewById(R.id.webview_frame);
+        mWebView = findViewById(R.id.webview);
+        mContainer = findViewById(R.id.webview_frame);
 
         WebSettings webSettings = mWebView.getSettings();
         webSettings.setJavaScriptEnabled(true);

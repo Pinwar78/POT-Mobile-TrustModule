@@ -2,25 +2,32 @@ package com.example.osbg.pot.domain_models;
 
 import com.example.osbg.pot.infrastructure.db.entities.MessageEntity;
 
-public abstract class Message {
-    protected Contact contact;
+public class Message {
+    protected String seqno;
+    protected String contactKey;
     protected String text;
     protected String date;
 
-    public Message(Contact sender, String text, String date) {
-        this.contact = sender;
+    public Message(String seqno, String contactKey, String text, String date) {
+        this.seqno = seqno;
+        this.contactKey = contactKey;
         this.text = text;
         this.date = date;
     }
 
     public Message(MessageEntity messageEntity){
-        this.contact = new Contact("test_name", messageEntity.contactkey, messageEntity.contactkey, "aeskey");
+        this.seqno = messageEntity.seqno;
+        this.contactKey = messageEntity.contactkey;
         this.text = messageEntity.message_body;
         this.date = messageEntity.date;
     }
 
-    public Contact getContact() {
-        return contact;
+    public String getContactKey() {
+        return contactKey;
+    }
+
+    public String getSeqno() {
+        return seqno;
     }
 
     public String getText() {
@@ -29,5 +36,17 @@ public abstract class Message {
 
     public String getDate() {
         return date;
+    }
+
+    public void setContactKey(String contactKey) {
+        this.contactKey = contactKey;
+    }
+
+    public void setText(String text) {
+        this.text = text;
+    }
+
+    public void setDate(String date) {
+        this.date = date;
     }
 }

@@ -1,6 +1,7 @@
 package com.example.osbg.pot.utilities.encryption;
 
 import android.util.Base64;
+import java.util.Base64.Decoder;
 import android.util.Log;
 
 import java.security.Key;
@@ -25,6 +26,11 @@ public class AESEncryptor {
         }
     }
 
+    public AESEncryptor(String key, String IV){
+        this.IV = Base64.decode(IV, Base64.CRLF);
+        keyValue = Base64.decode(key, Base64.CRLF);
+    }
+
     public String encrypt (String Data) throws Exception{
         Key key = generateKey();
         Cipher c = Cipher.getInstance(ALGORITHM);
@@ -46,9 +52,8 @@ public class AESEncryptor {
         return decryptedValue;
     }
 
-    private Key generateKey() throws Exception {
-        Key key = new SecretKeySpec(keyValue, ALGORITHM);
-        return key;
+    private Key generateKey(){
+        return new SecretKeySpec(keyValue, ALGORITHM);
     }
 
     public byte[] genRandomBytes(int x) {

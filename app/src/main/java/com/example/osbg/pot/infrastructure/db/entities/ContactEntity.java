@@ -13,22 +13,26 @@ import com.example.osbg.pot.domain_models.Contact;
 //        parentColumns = "id",
 //        childColumns = "contactkey"))
 public class ContactEntity {
-    public String name;
-    public String pubid;
     @NonNull
     public String contactkey;
-    public String sendkey;
+    public String name;
+    public String pubid;
+    public String senderkey;
     public String aeskey;
 
-    public ContactEntity(String name, String pubid, String contactkey, String sendkey, String aeskey){
+    public ContactEntity(String contactkey, String name, String pubid, String senderkey, String aeskey){
+        this.contactkey = contactkey;
         this.name = name;
         this.pubid = pubid;
-        this.contactkey = contactkey;
-        this.sendkey = sendkey;
+        this.senderkey = senderkey;
         this.aeskey = aeskey;
     }
 
-    public Contact toContactObject(){
-        return new Contact(name, pubid, contactkey, sendkey);
+    public ContactEntity(Contact contact){
+        this.contactkey = contact.getContactkey();
+        this.name = contact.getName();
+        this.pubid = contact.getPubid();
+        this.senderkey = contact.getSenderkey();
+        this.aeskey = contact.getAeskey();
     }
 }

@@ -1,14 +1,13 @@
 package com.example.osbg.pot.services;
 
 import android.content.Context;
-import android.content.SharedPreferences;
+import android.content.Intent;
 import android.util.Base64;
 import android.util.Log;
 import android.widget.Toast;
 
 import com.android.volley.AuthFailureError;
 import com.android.volley.NoConnectionError;
-import com.android.volley.Request;
 import com.android.volley.RequestQueue;
 import com.android.volley.Response;
 import com.android.volley.TimeoutError;
@@ -42,22 +41,34 @@ import javax.crypto.BadPaddingException;
 import javax.crypto.IllegalBlockSizeException;
 import javax.crypto.NoSuchPaddingException;
 
-public class VolleyDataService {
+public class NodeRequestService {
     private Context context;
-    private SharedPreferences sharedPreferences;
+    private NodeSettingsService nodeSettings;
     private RequestQueue queue;
+    private String host;
+    private String nodePubKey;
 
-    public VolleyDataService(Context context) {
+    public NodeRequestService(Context context){
         this.context = context;
+        this.nodeSettings = new NodeSettingsService(context);
+        this.host = nodeSettings.get("host");
+        this.nodePubKey = nodeSettings.get("pubkey");
     }
 
-    public JSONObject encryptData(String dataToEncrypt) throws NoSuchAlgorithmException {
+    public NodeRequestService(Context context, String host, String nodePubKey) {
+        this.context = context;
+        this.nodeSettings = new NodeSettingsService(context);
+        this.host = host;
+        this.nodePubKey = nodePubKey;
+    }
+
+    private JSONObject encryptData(String dataToEncrypt) throws NoSuchAlgorithmException {
         JSONObject encryptedData = new JSONObject();
         String encryptedText = "";
         String AESKey = "";
         String IV = "";
-        String MyPubKey = "";
-        String EncryptedAESKey = "";
+        String myPubKey = "";
+        String encryptedAESKey = "";
 
         //Encrypt Data with AES-Key
         try {
@@ -78,8 +89,8 @@ public class VolleyDataService {
         }
         //Encrypt AES-Key with NodePubKey
         try {
-            RSAEncryptor rsaEncryptor = new RSAEncryptor(context, AESKey);
-            EncryptedAESKey = rsaEncryptor.encryptData();
+            RSAEncryptor rsaEncryptor = new RSAEncryptor(AESKey, nodePubKey);
+            encryptedAESKey = rsaEncryptor.encryptData();
         } catch (NoSuchPaddingException | InvalidKeyException | BadPaddingException | IllegalBlockSizeException e) {
             e.printStackTrace();
         }
@@ -92,13 +103,13 @@ public class VolleyDataService {
                 Certificate cert = keyStore.getCertificate(MainActivity.ALIAS);
                 PublicKey getPublicKey = cert.getPublicKey();
                 byte[] publicKeyBytes = getPublicKey.getEncoded();
-                MyPubKey = new String(Base64.encode(publicKeyBytes, 0));
+                myPubKey = new String(Base64.encode(publicKeyBytes, 0));
             }
 
             encryptedData.put("iv", IV);
-            encryptedData.put("aeskey", EncryptedAESKey);
+            encryptedData.put("aeskey", encryptedAESKey);
             encryptedData.put("data", encryptedText);
-            encryptedData.put("pubkey", MyPubKey);
+            encryptedData.put("pubkey", myPubKey);
 
 
         } catch (NoSuchAlgorithmException | JSONException | CertificateException | KeyStoreException | IOException e) {
@@ -109,84 +120,22 @@ public class VolleyDataService {
         return encryptedData;
     }
 
-    public void sendDataToNode(String dataToEncrypt) throws NoSuchAlgorithmException {
-        JSONObject JSONtosend = encryptData(dataToEncrypt);
-        if(queue == null) {
-            queue = Volley.newRequestQueue(context);
+    public void sendDataToNode(String host, final String endpoint, final int requestMethod, String dataToEncrypt, final INodeRequestCallback callback, final INodeRequestError errorCallback) throws Exception {
+        if (host.equals("")){
+            Toast.makeText(context, "Please connect to a PoT node.", Toast.LENGTH_SHORT).show();
+            return;
         }
-        sharedPreferences = context.getSharedPreferences(MainActivity.PREFERENCES_NAME, 0);
-        final String sharedPrefNodeIP = sharedPreferences.getString("hosts", "");
-        //final String sharedPrefNodeIP = "http://10.10.40.174:9090/device/ping";
 
-        Log.d("sentjson", JSONtosend.toString());
-        JsonObjectRequest jsonObjectRequest = new JsonObjectRequest(Request.Method.POST, sharedPrefNodeIP, JSONtosend, new Response.Listener<JSONObject>() {
-            @Override
-            public void onResponse(JSONObject response) {
-                Log.d("volleydataresponse", response.toString());
-                if(response.toString().contains("OK")) {
-                    Toast.makeText(context, "Connected to node!", Toast.LENGTH_SHORT).show();
-                }
-                try {
-                    /*
-                    aes, iv and data decrypt - working!
-                    RSADecryptor rsaDecryptor = new RSADecryptor();
-                    rsaDecryptor.decryptData(response.getString("aeskey")
-                    response.getString("iv")
-                    AESDecryptor aesDecryptor = new AESDecryptor(response.getString("iv"), rsaDecryptor.decryptData(response.getString("aeskey")));
-                    aesDecryptor.decryptAESData(response.getString("data")));
-                    */
-                } catch (Exception e) {
-                    e.printStackTrace();
-                }
-            }
-        }, new Response.ErrorListener() {
-            @Override
-            public void onErrorResponse(VolleyError error) {
-                String body;
-                JSONObject jsonObject = new JSONObject();
-                if (error instanceof TimeoutError || error instanceof NoConnectionError) {
-                    Toast.makeText(context, "Server timeout!", Toast.LENGTH_LONG).show();
-                }
-                else if (error.networkResponse != null && error.networkResponse.data != null) {
-                    try {
-                        body = new String(error.networkResponse.data, "UTF-8");
-                        jsonObject = new JSONObject(body);
-                    } catch (UnsupportedEncodingException | JSONException e) {
-                        e.printStackTrace();
-                    }
-                }
-
-                    try {
-                        Toast.makeText(context, "Error: " + jsonObject.get("error"), Toast.LENGTH_LONG).show();
-                    } catch (JSONException e) {
-                        e.printStackTrace();
-                    }
-                }
-        }) {
-            @Override
-            public Map<String, String> getHeaders() throws AuthFailureError {
-                HashMap<String, String> headers = new HashMap<String, String>();
-                headers.put("Content-Type", "application/json; charset=utf-8");
-                return headers;
-            }
-        };
-        jsonObjectRequest.setTag("myjsonobjrequest");
-        queue.add(jsonObjectRequest);
-        System.gc();
-    }
-
-    public void sendDataToNode(final String endpoint, final int requestMethod, String dataToEncrypt, final IVolleyDataCallback callback) throws Exception {
         JSONObject encryptedDataJson = encryptData(dataToEncrypt);
+
         if(queue == null) {
             queue = Volley.newRequestQueue(context);
         }
 
-        sharedPreferences = context.getSharedPreferences(MainActivity.PREFERENCES_NAME, 0);
-        final String sharedPrefNodeIP = sharedPreferences.getString("hosts", "");
-
-        String url = "http://"+sharedPrefNodeIP+":9090"+endpoint;
+        String url = "http://"+host+":9090"+endpoint;
 
         JsonObjectRequest jsonObjectRequest = new JsonObjectRequest(requestMethod, url, encryptedDataJson, new Response.Listener<JSONObject>() {
+
             @Override
             public void onResponse(JSONObject response) {
                 Log.d("volleydataresponse", response.toString());
@@ -203,27 +152,27 @@ public class VolleyDataService {
         }, new Response.ErrorListener() {
             @Override
             public void onErrorResponse(VolleyError error) {
-                String body;
-                JSONObject jsonObject = new JSONObject();
+
                 if (error instanceof TimeoutError || error instanceof NoConnectionError) {
+                    errorCallback.onError(error);
+                    error.printStackTrace();
                     Toast.makeText(context, "Server timeout!", Toast.LENGTH_LONG).show();
+                    nodeSettings.clear();
+                    Toast.makeText(context, "Please connect to a new PoT node.", Toast.LENGTH_SHORT).show();
+                    return;
                 }
-                else if (error.networkResponse.data != null) {
-                    try {
-                        body = new String(error.networkResponse.data, "UTF-8");
-                        jsonObject = new JSONObject(body);
-                    } catch (UnsupportedEncodingException | JSONException e) {
-                        e.printStackTrace();
-                    }               }
+
                 try {
-                    Toast.makeText(context, "Error: " + jsonObject.get("error"), Toast.LENGTH_LONG).show();
+                    JSONObject response = new JSONObject(new String(error.networkResponse.data));
+                    Toast.makeText(context, "Error: " + response.get("error"), Toast.LENGTH_LONG).show();
                 } catch (JSONException e) {
                     e.printStackTrace();
                 }
+
             }
         }) {
             @Override
-            public Map<String, String> getHeaders() throws AuthFailureError {
+            public Map<String, String> getHeaders(){
                 HashMap<String, String> headers = new HashMap<>();
                 headers.put("Content-Type", "application/json; charset=utf-8");
                 return headers;
@@ -232,5 +181,27 @@ public class VolleyDataService {
         jsonObjectRequest.setTag("myjsonobjrequest");
         queue.add(jsonObjectRequest);
         System.gc();
+    }
+
+    public void sendDataToNode(String host, final String endpoint, final int requestMethod, String dataToEncrypt, final INodeRequestCallback callback) throws Exception{
+        this.sendDataToNode(host, endpoint, requestMethod, dataToEncrypt, callback, new INodeRequestError() {
+            @Override
+            public void onError(Exception response) {
+
+            }
+        });
+    }
+
+    public void sendDataToNode(final String endpoint, final int requestMethod, String dataToEncrypt, final INodeRequestCallback callback, final INodeRequestError errorCallback) throws Exception{
+        this.sendDataToNode(host, endpoint, requestMethod, dataToEncrypt, callback, errorCallback);
+    }
+
+    public void sendDataToNode(final String endpoint, final int requestMethod, String dataToEncrypt, final INodeRequestCallback callback) throws Exception{
+        this.sendDataToNode(host, endpoint, requestMethod, dataToEncrypt, callback, new INodeRequestError() {
+            @Override
+            public void onError(Exception response) {
+
+            }
+        });
     }
 }

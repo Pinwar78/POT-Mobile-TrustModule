@@ -10,6 +10,7 @@ import android.content.Intent;
 import android.content.SharedPreferences;
 import android.graphics.Color;
 import android.os.Build;
+import android.os.Bundle;
 import android.support.v4.app.NotificationCompat;
 
 import com.example.osbg.pot.MainActivity;
@@ -31,7 +32,7 @@ public class NotificationHandler extends android.app.Notification{
         this.context = c;
     }
 
-    public void sendNotification(String mySubject, String myMessage) {
+    public void sendNotification(String mySubject, String myMessage, java.lang.Class<?> cls, Bundle bundle) {
 
         this.subject = mySubject;
         this.message = myMessage;
@@ -52,7 +53,10 @@ public class NotificationHandler extends android.app.Notification{
         }
 
         //Here is a block of code that helps to do something when the user click on the notification
-        Intent notificationIntent = new Intent(context, MessageActivity.class);
+        Intent notificationIntent = new Intent(context, cls);
+        if (bundle != null){
+            notificationIntent.putExtras(bundle);
+        }
         notificationIntent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_SINGLE_TOP);
 
         PendingIntent pendingIntent = TaskStackBuilder.create(context).addNextIntent(notificationIntent).getPendingIntent(0, PendingIntent.FLAG_UPDATE_CURRENT);

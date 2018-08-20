@@ -1,5 +1,9 @@
 package com.example.osbg.pot.utilities;
 
+import com.example.osbg.pot.utilities.encryption.HexHelper;
+
+import org.apache.commons.codec.binary.Hex;
+
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 
@@ -8,19 +12,19 @@ import java.security.NoSuchAlgorithmException;
  */
 
 public class HashCalculator {
-    public String calculateHash(String s) {
+    public static String calculateHash(String s, String salt) {
         try {
             //Create SHA256 hash
-            MessageDigest digest = java.security.MessageDigest.getInstance("SHA-256");
-            digest.update(s.getBytes());
-            byte messageDigest[] = digest.digest();
+            MessageDigest digest = MessageDigest.getInstance("SHA-256");
 
-            //Create Hex String
-            StringBuffer hexString = new StringBuffer();
-            for(int i = 0; i < messageDigest.length; i++) {
-                hexString.append(Integer.toHexString(0xFF & messageDigest[i]));
+            //Adding salt
+            if (!salt.isEmpty()){
+                digest.update(salt.getBytes());
             }
-            return hexString.toString();
+
+            digest.update(s.getBytes());
+
+            return String.valueOf(Hex.encodeHex(digest.digest()));
 
         } catch (NoSuchAlgorithmException e) {
             e.printStackTrace();
@@ -28,9 +32,18 @@ public class HashCalculator {
         return "";
     }
 
-    public String calculateMD5(String s) throws NoSuchAlgorithmException {
+    public static String calculateHash(String s){
+        return HashCalculator.calculateHash(s, "");
+    }
+
+    public static String calculatePotMD5(String s){
         StringBuffer hexString = new StringBuffer();
-        MessageDigest md = MessageDigest.getInstance("MD5");
+        MessageDigest md = null;
+        try {
+            md = MessageDigest.getInstance("MD5");
+        } catch (NoSuchAlgorithmException e) {
+            e.printStackTrace();
+        }
         byte[] hash = md.digest(s.getBytes());
         String md5 = "";
 

@@ -1,4 +1,4 @@
-package com.example.osbg.pot.ui.messaging;
+package com.example.osbg.pot.ui.messaging.message_list;
 
 import android.content.Context;
 import android.support.v7.widget.RecyclerView;
@@ -7,6 +7,7 @@ import android.view.View;
 import android.view.ViewGroup;
 
 import com.example.osbg.pot.R;
+import com.example.osbg.pot.domain_models.Contact;
 import com.example.osbg.pot.domain_models.Message;
 import com.example.osbg.pot.domain_models.ReceivedMessage;
 import com.example.osbg.pot.domain_models.SentMessage;
@@ -14,7 +15,7 @@ import com.example.osbg.pot.domain_models.SentMessage;
 import java.util.ArrayList;
 
 /**
- * MessageListAdapter class to construct the Messages view.
+ * ContactListAdapter class to construct the Messages view.
  */
 
 public class MessageListAdapter extends RecyclerView.Adapter {
@@ -23,10 +24,12 @@ public class MessageListAdapter extends RecyclerView.Adapter {
     private final LayoutInflater inflater;
     private Context mContext;
     private ArrayList<Message> mMessages;
+    private Contact mContact;
 
-    public MessageListAdapter(Context context) {
+    public MessageListAdapter(Context context, Contact contact) {
         inflater = LayoutInflater.from(context);
         mContext = context;
+        mContact = contact;
     }
 
     @Override
@@ -70,8 +73,12 @@ public class MessageListAdapter extends RecyclerView.Adapter {
 
     @Override
     public void onBindViewHolder(RecyclerView.ViewHolder holder, int position) {
-        ReceivedMessage message = (ReceivedMessage) mMessages.get(position);
-        ((ReceivedMessageHolder) holder).bind(message);
+        Message message = mMessages.get(position);
+        if (message instanceof SentMessage) {
+            ((SentMessageHolder) holder).bind((SentMessage) message);
+        } else {
+            ((ReceivedMessageHolder) holder).bind((ReceivedMessage) message, mContact);
+        }
     }
 
     public void setMessages(ArrayList<Message> messages){

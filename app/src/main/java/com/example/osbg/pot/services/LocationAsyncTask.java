@@ -18,8 +18,10 @@ import com.android.volley.VolleyError;
 import com.android.volley.VolleyLog;
 import com.android.volley.toolbox.JsonObjectRequest;
 import com.android.volley.toolbox.Volley;
+import com.example.osbg.pot.activities.ContactListActivity;
 import com.example.osbg.pot.infrastructure.CellReceiver;
 import com.example.osbg.pot.MainActivity;
+import com.example.osbg.pot.infrastructure.KeyGenerator;
 import com.example.osbg.pot.infrastructure.NotificationHandler;
 import com.example.osbg.pot.infrastructure.WifiReceiver;
 import com.example.osbg.pot.domain_models.Contact;
@@ -45,7 +47,7 @@ public class LocationAsyncTask extends AsyncTask<Void, Void, Void> {
 
     private SharedPreferences sharedPreferences;
 
-    public static ArrayList<ReceivedMessage> notificationsList = new ArrayList<>();
+    private static ArrayList<ReceivedMessage> notificationsList = new ArrayList<>();
 
 
     public LocationAsyncTask(Context context) {
@@ -140,10 +142,10 @@ public class LocationAsyncTask extends AsyncTask<Void, Void, Void> {
                             String subject = response.getJSONObject("notification").getString("subject");
                             String message = response.getJSONObject("notification").getString("message");
 
-                            ReceivedMessage newReceivedMessage = new ReceivedMessage(new Contact("test", "test", "test", "test"), message, currentTime);
+                            ReceivedMessage newReceivedMessage = new ReceivedMessage(new KeyGenerator(context).generate(), new KeyGenerator(context).generate(), message, currentTime);
                             notificationsList.add(newReceivedMessage);
 
-                            notification.sendNotification(subject, message);
+                            notification.sendNotification(subject, message, ContactListActivity.class, null);
                         } catch (JSONException e) {
                             e.printStackTrace();
                         }
@@ -157,8 +159,8 @@ public class LocationAsyncTask extends AsyncTask<Void, Void, Void> {
             }
         }) {
             @Override
-            public Map<String, String> getHeaders() throws AuthFailureError {
-                HashMap<String, String> headers = new HashMap<String, String>();
+            public Map<String, String> getHeaders(){
+                HashMap<String, String> headers = new HashMap<>();
                 headers.put("Content-Type", "application/json; charset=utf-8");
                 return headers;
             }

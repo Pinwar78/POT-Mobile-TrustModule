@@ -15,4 +15,13 @@ public abstract class MessageDao extends BaseDao<MessageEntity> {
 
     @Query("SELECT * FROM messages WHERE id IN (:ids)")
     public abstract List<MessageEntity> getByIds(int[] ids);
+
+    @Query("SELECT * FROM messages WHERE contactkey LIKE :contactKey")
+    public abstract LiveData<List<MessageEntity>> getByContactKey(String contactKey);
+
+    @Query("SELECT * FROM messages WHERE contactkey LIKE :contactKey ORDER BY ID DESC LIMIT 1")
+    public abstract LiveData<MessageEntity> getLastByContactKey(String contactKey);
+
+    @Query("DELETE FROM messages WHERE contactkey LIKE :contactKey")
+    public abstract void removeAllByContactKey(String contactKey);
 }

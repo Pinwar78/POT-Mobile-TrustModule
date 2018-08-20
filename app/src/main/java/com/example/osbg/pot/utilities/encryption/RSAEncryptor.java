@@ -21,26 +21,12 @@ import javax.crypto.NoSuchPaddingException;
 
 public class RSAEncryptor {
     private final String ALGORITHM = "RSA/ECB/PKCS1Padding";
-    private Context context;
-    private String dataToEncrypt = "";
+    private String dataToEncrypt;
+    private String pubKeyStr;
 
-    public RSAEncryptor(Context context, String dataToEncrypt) {
-        this.context = context;
+    public RSAEncryptor(String dataToEncrypt, String pubKeyStr) {
         this.dataToEncrypt = dataToEncrypt;
-    }
-
-    private PublicKey getNodePublicKey() {
-        try {
-            SharedPreferences shared = context.getSharedPreferences(MainActivity.PREFERENCES_NAME, 0);
-            String nodePublicKey = shared.getString("nodepubkey", "");
-            PublicKey generatedNodePubKey = createPublicKey(nodePublicKey);
-            Log.d("generatedPubKey", generatedNodePubKey.toString());
-            return generatedNodePubKey;
-        } catch (Exception e) {
-            e.printStackTrace();
-            Toast.makeText(context, "Node public key not recognized!", Toast.LENGTH_SHORT).show();
-        }
-        return null;
+        this.pubKeyStr = pubKeyStr;
     }
 
     private PublicKey createPublicKey(String key) {
@@ -57,9 +43,9 @@ public class RSAEncryptor {
     }
 
     public String encryptData() throws NoSuchPaddingException, NoSuchAlgorithmException, InvalidKeyException, BadPaddingException, IllegalBlockSizeException {
-        PublicKey nodePubKey = getNodePublicKey();
+        PublicKey pubKey = createPublicKey(pubKeyStr);
         Cipher c = Cipher.getInstance(ALGORITHM);
-        c.init(Cipher.ENCRYPT_MODE, nodePubKey);
+        c.init(Cipher.ENCRYPT_MODE, pubKey);
         byte[] encVal = c.doFinal(dataToEncrypt.getBytes());
         String encryptedData = Base64.encodeToString(encVal, Base64.DEFAULT);
         Log.d("encryptedwithRSA", encryptedData);

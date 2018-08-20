@@ -11,10 +11,9 @@ import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.widget.TextView;
 
-import com.example.osbg.pot.services.LocationAsyncTask;
 import com.example.osbg.pot.MainActivity;
 import com.example.osbg.pot.R;
-import com.example.osbg.pot.ui.messaging.MessageListAdapter;
+import com.example.osbg.pot.ui.messaging.message_list.MessageListAdapter;
 
 /*MessageActivity class that starts a new activity when the user clicks on a notification*/
 
@@ -31,12 +30,12 @@ public class MessageActivity extends AppCompatActivity {
         setSupportActionBar(receivedMessagesToolbar);
         getSupportActionBar().setDisplayHomeAsUpEnabled(true);
         getSupportActionBar().setDisplayShowTitleEnabled(false);
-        TextView toolbarReceivedMessagesTitle = (TextView) findViewById(R.id.toolbarReceivedMessagesTitle);
+        TextView toolbarReceivedMessagesTitle = findViewById(R.id.toolbarReceivedMessagesTitle);
         toolbarReceivedMessagesTitle.setText("Received Messages");
 
-        mMessageRecycler = (RecyclerView) findViewById(R.id.recyclerview_message_list);
-//        mMessageAdapter = new MessageListAdapter(this, LocationAsyncTask.notificationsList);
-//        mMessageAdapter = new MessageListAdapter(this, MessagingPollingAsyncTask.notificationsList);
+        mMessageRecycler = findViewById(R.id.recyclerview_message_list);
+//        mMessageAdapter = new ContactListAdapter(this, LocationAsyncTask.notificationsList);
+//        mMessageAdapter = new ContactListAdapter(this, MessagingPollingAsyncTask.notificationsList);
         mMessageRecycler.setLayoutManager(new LinearLayoutManager(this));
         mMessageRecycler.setAdapter(mMessageAdapter);
     }
@@ -47,24 +46,20 @@ public class MessageActivity extends AppCompatActivity {
         super.onStart();
     }
 
-    //creates the three dot settings menu inside the app bar
+    //creates the three dot settings message_list_menu inside the app bar
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
         MenuInflater inflater = getMenuInflater();
-        inflater.inflate(R.menu.menu, menu);
+        inflater.inflate(R.menu.message_list_menu, menu);
         return super.onCreateOptionsMenu(menu);
     }
 
-    //handles onclick events in the three dot settings menu
+    //handles onclick events in the three dot settings message_list_menu
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
         switch (item.getItemId()) {
-            case R.id.clear_all:
-                LocationAsyncTask.notificationsList.clear();
-                mMessageAdapter.notifyDataSetChanged();
-                break;
-            case R.id.invite:
-                Intent intent = new Intent(this, InviteActivity.class);
+            case R.id.invite_node:
+                Intent intent = new Intent(this, InviteNodeActivity.class);
                 startActivity(intent);
                 break;
         }

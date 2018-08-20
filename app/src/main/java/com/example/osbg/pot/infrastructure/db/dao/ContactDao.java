@@ -13,14 +13,17 @@ import java.util.List;
 @Dao
 public abstract class ContactDao extends BaseDao<ContactEntity>{
     @Query("SELECT * FROM contacts")
-    abstract LiveData<List<ContactEntity>> getAllContacts();
+    public abstract LiveData<List<ContactEntity>> getAllContacts();
 
     @Query("SELECT * FROM contacts WHERE contactkey IN (:contactKeys)")
-    abstract List<ContactEntity> getByContactKeys(String[] contactKeys);
+    public abstract List<ContactEntity> getByContactKeys(String[] contactKeys);
 
-    @Query("SELECT * FROM contacts WHERE contactkey LIKE :contactKey")
-    abstract List<ContactEntity> getByContactKey(String contactKey);
+    @Query("SELECT * FROM contacts WHERE contactkey LIKE :contactKey LIMIT 1")
+    public abstract LiveData<ContactEntity> getByContactKey(String contactKey);
+
+    @Query("SELECT * FROM contacts WHERE pubid LIKE :pubid LIMIT 1")
+    public abstract LiveData<ContactEntity> getByPubId(String pubid);
 
     @Query("SELECT * FROM contacts WHERE name LIKE :name LIMIT 1")
-    abstract ContactEntity findByName(String name);
+    public abstract ContactEntity findByName(String name);
 }

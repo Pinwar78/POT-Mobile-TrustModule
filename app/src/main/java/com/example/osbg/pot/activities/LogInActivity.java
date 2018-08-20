@@ -83,11 +83,11 @@ public class LogInActivity extends AppCompatActivity implements FingerprintSucce
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_log_in);
-        Toolbar logInToolbar = (Toolbar) findViewById(R.id.log_in_toolbar);
+        Toolbar logInToolbar = findViewById(R.id.log_in_toolbar);
         setSupportActionBar(logInToolbar);
         getSupportActionBar().setDisplayHomeAsUpEnabled(true);
         getSupportActionBar().setDisplayShowTitleEnabled(false);
-        TextView toolbarLogInTitle = (TextView) findViewById(R.id.toolbarLogInTitle);
+        TextView toolbarLogInTitle = findViewById(R.id.toolbarLogInTitle);
         toolbarLogInTitle.setText("Login to Process of Things");
 
         // Check if we're running on Android 6.0 (M) or higher
@@ -97,48 +97,48 @@ public class LogInActivity extends AppCompatActivity implements FingerprintSucce
             fingerprintManager = (FingerprintManager) getSystemService(FINGERPRINT_SERVICE);
             //FingerprintManager fingerprintManager = (FingerprintManager) getApplicationContext().getSystemService(Context.FINGERPRINT_SERVICE);
             if (!fingerprintManager.isHardwareDetected()) {
-                fingerprintImage = (ImageView) findViewById(R.id.fingerprintImage);
+                fingerprintImage = findViewById(R.id.fingerprintImage);
                 fingerprintImage.setBackgroundResource(R.mipmap.fingerprint);
 
-                fingerprintInstructions = (TextView) findViewById(R.id.fingeprintInstructions);
+                fingerprintInstructions = findViewById(R.id.fingeprintInstructions);
                 fingerprintInstructions.setText("This device doesn't support fingerprint authorization. You can use password instead.");
                 fingerprintInstructions.setGravity(Gravity.CENTER);
 
             }
 
             if (ActivityCompat.checkSelfPermission(this, Manifest.permission.USE_FINGERPRINT) != PackageManager.PERMISSION_GRANTED) {
-                fingerprintImage = (ImageView) findViewById(R.id.fingerprintImage);
+                fingerprintImage = findViewById(R.id.fingerprintImage);
                 fingerprintImage.setBackgroundResource(R.mipmap.fingerprint);
 
-                fingerprintInstructions = (TextView) findViewById(R.id.fingeprintInstructions);
+                fingerprintInstructions = findViewById(R.id.fingeprintInstructions);
                 fingerprintInstructions.setText("This device supports fingerprint authorization, but the option is not enabled in the device's settings.");
             }
 
             if (!fingerprintManager.hasEnrolledFingerprints()) {
                 // User hasn't enrolled any fingerprints to authenticate with
-                fingerprintImage = (ImageView) findViewById(R.id.fingerprintImage);
+                fingerprintImage = findViewById(R.id.fingerprintImage);
                 fingerprintImage.setBackgroundResource(R.mipmap.fingerprint);
 
-                fingerprintInstructions = (TextView) findViewById(R.id.fingeprintInstructions);
+                fingerprintInstructions = findViewById(R.id.fingeprintInstructions);
                 fingerprintInstructions.setText("This device supports fingerprint authorization, but no fingerprint is configured (check device's security settings).");
                 fingerprintInstructions.setGravity(Gravity.CENTER);
                 return;
             }
 
             if(!keyguardManager.isKeyguardSecure()) {
-                fingerprintImage = (ImageView) findViewById(R.id.fingerprintImage);
+                fingerprintImage = findViewById(R.id.fingerprintImage);
                 fingerprintImage.setBackgroundResource(R.mipmap.fingerprint);
 
-                fingerprintInstructions = (TextView) findViewById(R.id.fingeprintInstructions);
+                fingerprintInstructions = findViewById(R.id.fingeprintInstructions);
                 fingerprintInstructions.setText("This device supports fingerprint authorization. Please enable lockscreen security in your device's Settings first.");
                 fingerprintInstructions.setGravity(Gravity.CENTER);
             }
             else {
                 try {
-                    fingerprintImage = (ImageView) findViewById(R.id.fingerprintImage);
+                    fingerprintImage = findViewById(R.id.fingerprintImage);
                     fingerprintImage.setBackgroundResource(R.mipmap.fingerprint);
 
-                    fingerprintInstructions = (TextView) findViewById(R.id.fingeprintInstructions);
+                    fingerprintInstructions = findViewById(R.id.fingeprintInstructions);
                     fingerprintInstructions.setText(R.string.fingerprint_instructions);
                     fingerprintInstructions.setGravity(Gravity.CENTER);
                     generateKey();
@@ -269,8 +269,7 @@ public class LogInActivity extends AppCompatActivity implements FingerprintSucce
     }
 
     private boolean isPasswordRight() {
-        HashCalculator hashCalculator = new HashCalculator();
-        String inputPasswordHash = hashCalculator.calculateHash(inputPassword.getText().toString());
+        String inputPasswordHash = HashCalculator.calculateHash(inputPassword.getText().toString());
 
         passwordPreferences = getApplicationContext().getSharedPreferences(PREFERENCES_NAME, 0);
         String passwordValue = passwordPreferences.getString(MY_PASSWORD, null);
@@ -373,7 +372,7 @@ public class LogInActivity extends AppCompatActivity implements FingerprintSucce
     }
 
     private class FingerprintException extends Exception {
-        public FingerprintException(Exception e) {
+        private FingerprintException(Exception e) {
             super(e);
         }
     }
