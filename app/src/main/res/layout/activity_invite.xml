@@ -4,7 +4,7 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    tools:context=".InviteActivity">
+    tools:context=".activities.InviteActivity">
 
     <RelativeLayout
         android:id="@+id/qr_invite_layout"
@@ -40,9 +40,9 @@
         <TextView
             android:layout_width="wrap_content"
             android:layout_height="50dp"
-            android:layout_toRightOf="@id/qr_checkbox"
+            android:layout_toEndOf="@id/qr_checkbox"
             android:gravity="center"
-            android:textSize="16dp"
+            android:textSize="16sp"
             android:textStyle="bold"
             android:text="Add contact info" />
     </RelativeLayout>
