@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto">
+    <item
+        android:id="@+id/invite_node"
+        android:title="Invite to PoT"
+        app:showAsAction="never"/>
+    <item
+        android:id="@+id/invite_contact"
+        android:title="Invite a contact"
+        app:showAsAction="never"/>
+    <item
+        android:id="@+id/edit_name"
+        android:title="Edit your name"
+        app:showAsAction="never"/>
+</menu>
