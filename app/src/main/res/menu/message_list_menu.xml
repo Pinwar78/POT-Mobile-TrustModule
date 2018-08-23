@@ -2,11 +2,11 @@
 <menu xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto">
     <item
-        android:id="@+id/clear_all"
-        android:title="@string/clear_all_messages"
+        android:id="@+id/clear_all_messages"
+        android:title="Clear all messages"
         app:showAsAction="never"/>
     <item
-        android:id="@+id/invite"
-        android:title="Invite"
+        android:id="@+id/remove_contact"
+        android:title="Remove contact"
         app:showAsAction="never"/>
 </menu>
