@@ -92,6 +92,26 @@ public class MainActivity extends AppCompatActivity {
             Intent intent = new Intent(this, CreateAccount.class);
             this.startActivity(intent);
         }
+        handleIntent();
+
+    }
+
+    private void handleIntent() {
+        Intent appLinkIntent = getIntent();
+        String appLinkAction = appLinkIntent.getAction();
+        Uri appLinkData = appLinkIntent.getData();
+
+        if (appLinkData != null){
+
+            Log.d("POTT APPLINKACTION", appLinkAction);
+            Log.d("POTT APPLINKDATA", appLinkData.getLastPathSegment());
+        }
+    }
+
+    @Override
+    protected void onNewIntent(Intent intent) {
+        super.onNewIntent(intent);
+        setIntent(intent);
     }
 
     @Override

@@ -40,6 +40,17 @@
 
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
+            <intent-filter>
+                <action android:name="android.intent.action.VIEW" />
+
+                <category android:name="android.intent.category.DEFAULT" />
+                <category android:name="android.intent.category.BROWSABLE" />
+
+                <data
+                    android:scheme="http"
+                    android:host="www.pot.ec"
+                    android:pathPrefix="/location/" />
+            </intent-filter>
         </activity>
         <activity
             android:name=".activities.CreateAccount"
@@ -51,7 +62,13 @@
             android:name=".activities.MessageActivity"
             android:theme="@style/Theme.AppCompat.Light.NoActionBar" />
         <activity
-            android:name=".ui.messaging.MessageListActivity"
+            android:name=".activities.MessageListActivity"
+            android:theme="@style/Theme.AppCompat.Light.NoActionBar" />
+        <activity
+            android:name=".activities.ContactListActivity"
+            android:theme="@style/Theme.AppCompat.Light.NoActionBar" />
+        <activity
+            android:name=".activities.InviteContactActivity"
             android:theme="@style/Theme.AppCompat.Light.NoActionBar" />
         <activity
             android:name=".activities.ScannerActivity"
@@ -59,13 +76,13 @@
         <activity
             android:name=".activities.DappActivity"
             android:theme="@style/Theme.AppCompat.Light.NoActionBar" />
-        <activity android:name=".activities.InviteActivity" />
+        <activity android:name=".activities.InviteNodeActivity" />
 
         <service
             android:name=".services.LocationService"
             android:exported="false" />
         <service
-            android:name=".services.MessagingService"
+            android:name=".services.MessagingPollingService"
             android:exported="false" />
     </application>
 
