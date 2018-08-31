@@ -58,7 +58,7 @@ public class CreateAccount extends AppCompatActivity {
 
                     if(createPassword.getText().length() > 5 && validatePassword()) {
                         HashCalculator hashCalculator = new HashCalculator();
-                        String inputPasswordHash = hashCalculator.calculateHash(createPassword.getText().toString());
+                        String inputPasswordHash = hashCalculator.calculateSha256(createPassword.getText().toString());
                         editor = passwordPreferences.edit();
                         editor.putString(MY_PASSWORD, inputPasswordHash);
                         editor.apply();

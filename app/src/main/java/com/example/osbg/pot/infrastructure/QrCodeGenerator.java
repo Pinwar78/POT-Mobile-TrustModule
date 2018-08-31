@@ -3,8 +3,8 @@ package com.example.osbg.pot.infrastructure;
 import android.content.Context;
 
 import com.android.volley.Request;
-import com.example.osbg.pot.services.INodeRequestCallback;
-import com.example.osbg.pot.services.NodeRequestService;
+import com.example.osbg.pot.services.api.INodeRequestCallback;
+import com.example.osbg.pot.services.api.NodeRequest;
 import com.example.osbg.pot.utilities.HashCalculator;
 
 import org.json.JSONObject;
@@ -17,7 +17,7 @@ public class QrCodeGenerator {
     }
 
     public void generate(String data, INodeRequestCallback callback, boolean potsum){
-        NodeRequestService volleyData = new NodeRequestService(context);
+        NodeRequest volleyData = new NodeRequest(context);
         try {
             if (potsum){
                 String potMd5 = HashCalculator.calculatePotMD5(data);

@@ -10,7 +10,6 @@ import android.os.Handler;
 import android.telephony.TelephonyManager;
 import android.util.Log;
 
-import com.android.volley.AuthFailureError;
 import com.android.volley.Request;
 import com.android.volley.RequestQueue;
 import com.android.volley.Response;
@@ -21,10 +20,8 @@ import com.android.volley.toolbox.Volley;
 import com.example.osbg.pot.activities.ContactListActivity;
 import com.example.osbg.pot.infrastructure.CellReceiver;
 import com.example.osbg.pot.MainActivity;
-import com.example.osbg.pot.infrastructure.KeyGenerator;
 import com.example.osbg.pot.infrastructure.NotificationHandler;
 import com.example.osbg.pot.infrastructure.WifiReceiver;
-import com.example.osbg.pot.domain_models.Contact;
 import com.example.osbg.pot.domain_models.ReceivedMessage;
 
 import org.json.JSONException;

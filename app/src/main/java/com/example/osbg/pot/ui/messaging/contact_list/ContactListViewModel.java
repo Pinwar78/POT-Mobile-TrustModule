@@ -9,7 +9,7 @@ import android.support.annotation.Nullable;
 import com.example.osbg.pot.domain_models.Contact;
 import com.example.osbg.pot.infrastructure.db.ContactRepository;
 import com.example.osbg.pot.infrastructure.db.entities.ContactEntity;
-import com.example.osbg.pot.services.MessagingService;
+import com.example.osbg.pot.services.messaging.MessagingService;
 
 import java.util.List;
 

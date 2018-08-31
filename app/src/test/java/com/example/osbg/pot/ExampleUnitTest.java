@@ -2,15 +2,10 @@ package com.example.osbg.pot;
 
 import android.util.Base64;
 
-import com.example.osbg.pot.infrastructure.KeyGenerator;
 import com.example.osbg.pot.utilities.Base58Helper;
 import com.example.osbg.pot.utilities.FormatHelper;
-import com.example.osbg.pot.utilities.HashCalculator;
 
 import org.junit.Test;
-
-import java.io.FileReader;
-import java.security.spec.ECField;
 
 import static org.junit.Assert.*;
 

@@ -1,14 +1,10 @@
-package com.example.osbg.pot.services;
+package com.example.osbg.pot.services.messaging;
 
 import android.app.Application;
-import android.arch.lifecycle.LiveData;
-import android.arch.lifecycle.Observer;
 import android.content.Context;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.os.Handler;
-import android.support.annotation.Nullable;
-import android.util.Log;
 
 import com.android.volley.Request;
 import com.example.osbg.pot.activities.ContactListActivity;
@@ -20,6 +16,10 @@ import com.example.osbg.pot.infrastructure.db.ContactRepository;
 import com.example.osbg.pot.infrastructure.db.IDbCallback;
 import com.example.osbg.pot.infrastructure.db.MessageRepository;
 import com.example.osbg.pot.infrastructure.db.entities.ContactEntity;
+import com.example.osbg.pot.services.api.INodeRequestCallback;
+import com.example.osbg.pot.services.api.INodeRequestError;
+import com.example.osbg.pot.services.api.NodeRequest;
+import com.example.osbg.pot.services.NodeSettingsService;
 import com.example.osbg.pot.utilities.encryption.AESDecryptor;
 import com.example.osbg.pot.utilities.encryption.RSADecryptor;
 
@@ -65,8 +65,8 @@ public class MessagingPollingAsyncTask extends AsyncTask<Void, Void, Void> {
                     messageRequestJson.put("pubid", messagingService.getPubId());
 
                     // Sending request
-                    NodeRequestService nodeRequest = new NodeRequestService(context);
-                    nodeRequest.sendDataToNode("/device/messages/get", Request.Method.POST, messageRequestJson.toString(), new INodeRequestCallback(){
+                    NodeRequest nodeRequest = new NodeRequest(context);
+                    nodeRequest.sendDataToNode("/device/messages/get", Request.Method.POST, messageRequestJson.toString(), new INodeRequestCallback<JSONObject>(){
                         @Override
                         public void onSuccess(JSONObject response){
                             // On response OK sends notification and adds the messages and the new contacts

@@ -269,7 +269,7 @@ public class LogInActivity extends AppCompatActivity implements FingerprintSucce
     }
 
     private boolean isPasswordRight() {
-        String inputPasswordHash = HashCalculator.calculateHash(inputPassword.getText().toString());
+        String inputPasswordHash = HashCalculator.calculateSha256(inputPassword.getText().toString());
 
         passwordPreferences = getApplicationContext().getSharedPreferences(PREFERENCES_NAME, 0);
         String passwordValue = passwordPreferences.getString(MY_PASSWORD, null);

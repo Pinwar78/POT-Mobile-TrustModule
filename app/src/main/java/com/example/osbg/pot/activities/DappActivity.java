@@ -2,11 +2,13 @@ package com.example.osbg.pot.activities;
 
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
+import android.webkit.ConsoleMessage;
+import android.webkit.WebChromeClient;
 import android.webkit.WebSettings;
 import android.webkit.WebView;
 import android.widget.RelativeLayout;
-
 import com.example.osbg.pot.R;
+import java.io.File;
 
 public class DappActivity extends AppCompatActivity {
     public WebView mWebView;
@@ -22,10 +24,21 @@ public class DappActivity extends AppCompatActivity {
 
         WebSettings webSettings = mWebView.getSettings();
         webSettings.setJavaScriptEnabled(true);
+        webSettings.setAllowFileAccessFromFileURLs(true); //Maybe you don't need this rule
+        webSettings.setAllowUniversalAccessFromFileURLs(true);
+        mWebView.setWebChromeClient(new WebChromeClient() {
+            @Override
+            public boolean onConsoleMessage(ConsoleMessage consoleMessage) {
+                android.util.Log.d("WebView", consoleMessage.message());
+                return true;
+            }
 
-        String goTo = getIntent().getExtras().getString("qrcodeinfo");
 
-        mWebView.loadUrl(goTo);
+        });
+
+        File indexFile = (File) getIntent().getExtras().getSerializable("indexFile");
+
+        mWebView.loadUrl(indexFile.toURI().toString());
     }
 
     @Override

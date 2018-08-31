@@ -57,7 +57,7 @@ public class CellReceiver extends LocationService {
         String cellIDValue = sharedPreferences.getString(MainActivity.CELL_ID, null);
 
         HashCalculator cellIDHashCheck = new HashCalculator();
-        String currentCellHash = cellIDHashCheck.calculateHash(String.valueOf(id));
+        String currentCellHash = cellIDHashCheck.calculateSha256(String.valueOf(id));
 
         if (!currentCellHash.trim().equals("5feceb66ffc86f38d952786c6d696c79c2dbc239dd4e91b46729d73a27fb57e9") && !currentCellHash.trim().equals("1bad6b8cf97131fceab8543e81f7757195fbb1d36b376ee994ad1cf17699c464")) {
 

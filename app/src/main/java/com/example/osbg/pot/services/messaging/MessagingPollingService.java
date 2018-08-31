@@ -1,4 +1,4 @@
-package com.example.osbg.pot.services;
+package com.example.osbg.pot.services.messaging;
 
 import android.app.IntentService;
 import android.content.Intent;

@@ -1,6 +1,10 @@
 package com.example.osbg.pot.utilities.encryption;
 
 import android.util.Base64;
+
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
 import java.util.Base64.Decoder;
 import android.util.Log;
 
@@ -8,27 +12,24 @@ import java.security.Key;
 import java.security.SecureRandom;
 
 import javax.crypto.Cipher;
+import javax.crypto.CipherOutputStream;
 import javax.crypto.spec.IvParameterSpec;
 import javax.crypto.spec.SecretKeySpec;
 
 public class AESEncryptor {
+    public static final int AES_BYTES_NUM = 16;
     private final String ALGORITHM = "AES/CBC/PKCS5Padding";
     private byte[] keyValue;
     private byte[] IV;
-    private int numberBytes = 16;
-
-    public AESEncryptor(String key, int numberBytes) {
-        IV = genRandomBytes(numberBytes);
-        if(key.length() != 16) {
-           keyValue = genRandomBytes(16);
-        } else {
-            keyValue = key.getBytes();
-        }
-    }
 
     public AESEncryptor(String key, String IV){
-        this.IV = Base64.decode(IV, Base64.CRLF);
         keyValue = Base64.decode(key, Base64.CRLF);
+        this.IV = Base64.decode(IV, Base64.CRLF);
+    }
+
+    public AESEncryptor(){
+        keyValue = genRandomBytes(AES_BYTES_NUM);
+        IV = genRandomBytes(AES_BYTES_NUM);
     }
 
     public String encrypt (String Data) throws Exception{
@@ -37,19 +38,7 @@ public class AESEncryptor {
         c.init(Cipher.ENCRYPT_MODE, key, new IvParameterSpec(IV));
         byte[] encVal = c.doFinal(Data.getBytes());
         String encryptedValue = Base64.encodeToString(encVal, Base64.DEFAULT);
-        Log.d("key4enceto", new String(Base64.encodeToString(keyValue, Base64.DEFAULT)));
-        Log.d("key4enceto", new String(Base64.encodeToString(IV, Base64.DEFAULT)));
         return encryptedValue;
-    }
-
-    public String decrypt(String encryptedData) throws Exception {
-        Key key = generateKey();
-        Cipher c = Cipher.getInstance(ALGORITHM);
-        c.init(Cipher.DECRYPT_MODE, key, new IvParameterSpec(IV));
-        byte[] decodedValue = Base64.decode(encryptedData.getBytes(), Base64.DEFAULT);
-        byte[] decValue = c.doFinal(decodedValue);
-        String decryptedValue = new String(decValue);
-        return decryptedValue;
     }
 
     private Key generateKey(){
@@ -58,9 +47,9 @@ public class AESEncryptor {
 
     public byte[] genRandomBytes(int x) {
         SecureRandom r = new SecureRandom();
-        byte[] ivBytes = new byte[x];
-        r.nextBytes(ivBytes);
-        return ivBytes;
+        byte[] randBytes = new byte[x];
+        r.nextBytes(randBytes);
+        return randBytes;
     }
 
     public byte[] getKeyValue() {

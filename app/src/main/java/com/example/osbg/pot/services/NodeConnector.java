@@ -4,33 +4,29 @@ import android.content.Context;
 import android.widget.Toast;
 
 import com.android.volley.Request;
+import com.example.osbg.pot.services.api.INodeRequestCallback;
+import com.example.osbg.pot.services.api.NodeRequest;
+import com.example.osbg.pot.services.messaging.MessagingService;
 
 import org.json.JSONException;
 import org.json.JSONObject;
 
 public class NodeConnector {
     private Context context;
-    private String nodeQrData;
-    private String uuid = "";
-    private String nodePubKey = "";
+    private String uuid;
+    private String nodePubKey;
     private String host = "";
-    private String pubId = "";
 
     private MessagingService messagingService;
     private NodeSettingsService nodeSettingsService;
 
-    public NodeConnector(Context context, String nodeQrData) {
+    public NodeConnector(Context context, String uuid, String nodePubKey, String host) {
         this.context = context;
-        this.nodeQrData = nodeQrData;
-        getSettingsFromQrString();
+        this.uuid = uuid;
+        this.nodePubKey = nodePubKey;
+        this.host = host;
         this.messagingService = new MessagingService(context);
         this.nodeSettingsService = new NodeSettingsService(context);
-    }
-
-    private void getSettingsFromQrString(){
-        uuid = nodeQrData.substring(4, 40);
-        nodePubKey = nodeQrData.substring(40, 256);
-        host = nodeQrData.substring(256, nodeQrData.length());
     }
 
     private void saveNodeSettings(String uuid, String host, String pubKey, String moveKey) {
@@ -55,8 +51,8 @@ public class NodeConnector {
             this.nodeSettingsService.save("host", host);
             this.nodeSettingsService.save("pubkey", nodePubKey);
 
-            NodeRequestService volleyData = new NodeRequestService(context, host, nodePubKey);
-            volleyData.sendDataToNode( host,"/device/new", Request.Method.POST, myDataToEncrypt.toString(), new INodeRequestCallback() {
+            NodeRequest volleyData = new NodeRequest(context, host, nodePubKey);
+            volleyData.sendDataToNode( host,"/device/new", Request.Method.POST, myDataToEncrypt.toString(), new INodeRequestCallback<JSONObject>() {
                 @Override
                 public void onSuccess(JSONObject response) {
                     try {

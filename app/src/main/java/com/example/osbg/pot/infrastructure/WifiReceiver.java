@@ -77,7 +77,7 @@ public class WifiReceiver extends BroadcastReceiver {
             sharedPreferences = c.getSharedPreferences(MainActivity.PREFERENCES_NAME, 0);
 
             if(!(excellent_wifis.isEmpty())) {
-                excelWifisHash = hashCalculator.calculateHash(excellent_wifis.toString());
+                excelWifisHash = hashCalculator.calculateSha256(excellent_wifis.toString());
                 String excelWifisValue = sharedPreferences.getString(MainActivity.EXCEL_WIFI, null);
                 if(!(excelWifisHash.trim().equals(excelWifisValue))) {
                     editor = sharedPreferences.edit();
@@ -87,7 +87,7 @@ public class WifiReceiver extends BroadcastReceiver {
                 }
             }
             if(!(good_wifis.isEmpty())) {
-                goodWifisHash = hashCalculator.calculateHash(good_wifis.toString());
+                goodWifisHash = hashCalculator.calculateSha256(good_wifis.toString());
                 String goodWifisValue = sharedPreferences.getString(MainActivity.GOOD_WIFI, null);
                 if(!(goodWifisHash.trim().equals(goodWifisValue))) {
                     editor = sharedPreferences.edit();

@@ -22,7 +22,7 @@ import com.example.osbg.pot.MainActivity;
 import com.example.osbg.pot.R;
 import com.example.osbg.pot.domain_models.Contact;
 import com.example.osbg.pot.infrastructure.db.entities.ContactEntity;
-import com.example.osbg.pot.services.MessagingService;
+import com.example.osbg.pot.services.messaging.MessagingService;
 import com.example.osbg.pot.ui.messaging.contact_list.ContactListAdapter;
 import com.example.osbg.pot.ui.messaging.contact_list.ContactListViewModel;
 import com.example.osbg.pot.ui.messaging.contact_list.OnContactItemClickListener;

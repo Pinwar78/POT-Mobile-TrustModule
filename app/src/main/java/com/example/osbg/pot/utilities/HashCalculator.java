@@ -1,7 +1,5 @@
 package com.example.osbg.pot.utilities;
 
-import com.example.osbg.pot.utilities.encryption.HexHelper;
-
 import org.apache.commons.codec.binary.Hex;
 
 import java.security.MessageDigest;
@@ -12,7 +10,7 @@ import java.security.NoSuchAlgorithmException;
  */
 
 public class HashCalculator {
-    public static String calculateHash(String s, String salt) {
+    public static String calculateSha256(String s, String salt) {
         try {
             //Create SHA256 hash
             MessageDigest digest = MessageDigest.getInstance("SHA-256");
@@ -32,8 +30,8 @@ public class HashCalculator {
         return "";
     }
 
-    public static String calculateHash(String s){
-        return HashCalculator.calculateHash(s, "");
+    public static String calculateSha256(String s){
+        return HashCalculator.calculateSha256(s, "");
     }
 
     public static String calculatePotMD5(String s){

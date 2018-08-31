@@ -14,7 +14,7 @@ import android.widget.ImageView;
 import android.widget.ProgressBar;
 
 import com.example.osbg.pot.R;
-import com.example.osbg.pot.services.INodeRequestCallback;
+import com.example.osbg.pot.services.api.INodeRequestCallback;
 import com.example.osbg.pot.ui.messaging.invite_contact.InviteContactViewModel;
 
 import org.json.JSONException;
@@ -45,7 +45,7 @@ public class InviteContactActivity extends AppCompatActivity {
         viewModel = ViewModelProviders.of(this).get(InviteContactViewModel.class);
 
         try {
-            viewModel.genInviteQrCode(new INodeRequestCallback(){
+            viewModel.genInviteQrCode(new INodeRequestCallback<JSONObject>(){
                 public void onSuccess(JSONObject response) {
 
                     byte[] decodedString = new byte[0];

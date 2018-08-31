@@ -13,8 +13,8 @@ import android.widget.ProgressBar;
 
 import com.android.volley.Request;
 import com.example.osbg.pot.R;
-import com.example.osbg.pot.services.INodeRequestCallback;
-import com.example.osbg.pot.services.NodeRequestService;
+import com.example.osbg.pot.services.api.INodeRequestCallback;
+import com.example.osbg.pot.services.api.NodeRequest;
 
 import org.json.JSONObject;
 
@@ -38,7 +38,7 @@ public class InviteNodeActivity extends AppCompatActivity {
         getSupportActionBar().setTitle("Invite to Process of Things");
 
         try {
-            new NodeRequestService(this).sendDataToNode("/device/invite", Request.Method.POST, "", new INodeRequestCallback() {
+            new NodeRequest(this).sendDataToNode("/device/invite", Request.Method.POST, "", new INodeRequestCallback<JSONObject>() {
                 @Override
                 public void onSuccess(JSONObject response) {
                     try {

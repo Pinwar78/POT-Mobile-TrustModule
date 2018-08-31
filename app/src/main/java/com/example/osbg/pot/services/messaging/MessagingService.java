@@ -1,22 +1,20 @@
-package com.example.osbg.pot.services;
+package com.example.osbg.pot.services.messaging;
 
 import android.app.Application;
-import android.arch.lifecycle.LiveData;
-import android.arch.lifecycle.Observer;
 import android.content.Context;
 import android.content.SharedPreferences;
-import android.support.annotation.Nullable;
-import android.util.Log;
 
 import com.android.volley.Request;
 import com.example.osbg.pot.domain_models.Contact;
 import com.example.osbg.pot.domain_models.Message;
-import com.example.osbg.pot.infrastructure.KeyGenerator;
 import com.example.osbg.pot.infrastructure.db.ContactRepository;
 import com.example.osbg.pot.infrastructure.db.IDbCallback;
 import com.example.osbg.pot.infrastructure.db.MessageRepository;
 import com.example.osbg.pot.infrastructure.db.entities.ContactEntity;
 import com.example.osbg.pot.infrastructure.db.entities.MessageEntity;
+import com.example.osbg.pot.services.api.INodeRequestCallback;
+import com.example.osbg.pot.services.KeyGenerator;
+import com.example.osbg.pot.services.api.NodeRequest;
 import com.example.osbg.pot.utilities.encryption.AESEncryptor;
 import com.example.osbg.pot.utilities.encryption.RSAEncryptor;
 
@@ -41,14 +39,14 @@ public class MessagingService {
     private ContactRepository contactRepo;
     private MessageRepository messageRepo;
     private SharedPreferences sharedPreferences;
-    private NodeRequestService nodeRequest;
+    private NodeRequest nodeRequest;
 
     public MessagingService(Context context) {
         this.context = context;
         contactRepo = new ContactRepository((Application) context.getApplicationContext());
         messageRepo = new MessageRepository((Application) context.getApplicationContext());
         sharedPreferences = context.getSharedPreferences(MESSAGING_PREFERENCES, 0);
-        nodeRequest = new NodeRequestService(context);
+        nodeRequest = new NodeRequest(context);
     }
 
     public void sendMessage(final Message message){
@@ -61,7 +59,7 @@ public class MessagingService {
                     jsonRequest.put("pubid", toContact.getPubid());
                     jsonRequest.put("sender", toContact.getSenderkey());
                     jsonRequest.put("data", new AESEncryptor(toContact.getAeskey(), toContact.getAeskey()).encrypt(message.getText()));
-                    nodeRequest.sendDataToNode(MESSAGING_API_PREFIX+MESSAGING_SEND_ENDPOINT, Request.Method.POST, jsonRequest.toString(), new INodeRequestCallback() {
+                    nodeRequest.sendDataToNode(MESSAGING_API_PREFIX+MESSAGING_SEND_ENDPOINT, Request.Method.POST, jsonRequest.toString(), new INodeRequestCallback<JSONObject>() {
                         @Override public void onSuccess(JSONObject response) {
                         }
                     });
@@ -98,7 +96,7 @@ public class MessagingService {
             jsonRequest.put("aeskey", new RSAEncryptor(contact.getAeskey(), pubKey).encryptData());
             jsonRequest.put("data", encrData);
 
-            nodeRequest.sendDataToNode(MESSAGING_API_PREFIX+MESSAGING_NEW_CONTACT_ENDPOINT, Request.Method.POST, jsonRequest.toString(), new INodeRequestCallback() {
+            nodeRequest.sendDataToNode(MESSAGING_API_PREFIX+MESSAGING_NEW_CONTACT_ENDPOINT, Request.Method.POST, jsonRequest.toString(), new INodeRequestCallback<JSONObject>() {
                 @Override
                 public void onSuccess(JSONObject response) {
 
@@ -154,7 +152,7 @@ public class MessagingService {
             jsonRequest.put("sender", contact.getSenderkey());
             jsonRequest.put("data", encrData);
 
-            nodeRequest.sendDataToNode(MESSAGING_API_PREFIX+MESSAGING_NEW_CONTACT_INFO_ENDPOINT, Request.Method.POST, jsonRequest.toString(), new INodeRequestCallback() {
+            nodeRequest.sendDataToNode(MESSAGING_API_PREFIX+MESSAGING_NEW_CONTACT_INFO_ENDPOINT, Request.Method.POST, jsonRequest.toString(), new INodeRequestCallback<JSONObject>() {
                 @Override
                 public void onSuccess(JSONObject response) {
 

@@ -10,10 +10,9 @@ import com.example.osbg.pot.infrastructure.db.ContactRepository;
 import com.example.osbg.pot.infrastructure.db.MessageRepository;
 import com.example.osbg.pot.infrastructure.db.entities.ContactEntity;
 import com.example.osbg.pot.infrastructure.db.entities.MessageEntity;
-import com.example.osbg.pot.services.MessagingService;
+import com.example.osbg.pot.services.messaging.MessagingService;
 
 import java.util.List;
-import java.util.Random;
 
 public class MessageViewModel extends AndroidViewModel {
     private MessageRepository mMessageRepo;

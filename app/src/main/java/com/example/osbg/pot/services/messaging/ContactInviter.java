@@ -1,13 +1,12 @@
-package com.example.osbg.pot.services;
+package com.example.osbg.pot.services.messaging;
 
 import android.content.Context;
 import android.content.SharedPreferences;
 import android.util.Base64;
-import android.util.Log;
 
 import com.example.osbg.pot.MainActivity;
-import com.example.osbg.pot.infrastructure.KeyGenerator;
-import com.example.osbg.pot.services.MessagingService;
+import com.example.osbg.pot.services.KeyGenerator;
+import com.example.osbg.pot.services.messaging.MessagingService;
 
 import java.security.KeyStore;
 import java.security.PublicKey;

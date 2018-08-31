@@ -1,6 +1,4 @@
-package com.example.osbg.pot.services;
-
-import org.json.JSONObject;
+package com.example.osbg.pot.services.api;
 
 public interface INodeRequestError {
     void onError(Exception response);

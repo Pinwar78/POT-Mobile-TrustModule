@@ -28,7 +28,7 @@ import com.example.osbg.pot.activities.CreateAccount;
 import com.example.osbg.pot.activities.LogInActivity;
 import com.example.osbg.pot.activities.ScannerActivity;
 import com.example.osbg.pot.infrastructure.WifiReceiver;
-import com.example.osbg.pot.services.MessagingPollingService;
+import com.example.osbg.pot.services.messaging.MessagingPollingService;
 import com.example.osbg.pot.services.NodeSettingsService;
 import com.example.osbg.pot.services.ScanHandler;
 import com.google.zxing.integration.android.IntentIntegrator;
@@ -100,12 +100,6 @@ public class MainActivity extends AppCompatActivity {
         Intent appLinkIntent = getIntent();
         String appLinkAction = appLinkIntent.getAction();
         Uri appLinkData = appLinkIntent.getData();
-
-        if (appLinkData != null){
-
-            Log.d("POTT APPLINKACTION", appLinkAction);
-            Log.d("POTT APPLINKDATA", appLinkData.getLastPathSegment());
-        }
     }
 
     @Override
@@ -208,7 +202,7 @@ public class MainActivity extends AppCompatActivity {
 //                String cellIDValue = sharedPreferences.getString(CELL_ID, null);
 //
 //                HashCalculator cellIDHashCheck = new HashCalculator();
-//                String currentCellHash = cellIDHashCheck.calculateHash(String.valueOf(currentCellID));
+//                String currentCellHash = cellIDHashCheck.calculateSha256(String.valueOf(currentCellID));
 //
 //                if (!(currentCellHash.trim().equals(cellIDValue))) {
 //                    editor = sharedPreferences.edit();
