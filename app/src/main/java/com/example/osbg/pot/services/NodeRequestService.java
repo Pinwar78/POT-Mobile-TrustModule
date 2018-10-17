@@ -15,6 +15,8 @@ import com.android.volley.VolleyError;
 import com.android.volley.toolbox.JsonObjectRequest;
 import com.android.volley.toolbox.Volley;
 import com.example.osbg.pot.MainActivity;
+import com.example.osbg.pot.services.api.INodeRequestCallback;
+import com.example.osbg.pot.services.api.INodeRequestError;
 import com.example.osbg.pot.utilities.encryption.AESDecryptor;
 import com.example.osbg.pot.utilities.encryption.AESEncryptor;
 import com.example.osbg.pot.utilities.encryption.RSADecryptor;
@@ -72,16 +74,9 @@ public class NodeRequestService {
 
         //Encrypt Data with AES-Key
         try {
-            AESEncryptor aes = new AESEncryptor("", 16);
-            aes.genRandomBytes(16);
+            AESEncryptor aes = new AESEncryptor();
             encryptedText = aes.encrypt(dataToEncrypt);
-            byte[] array = new byte[16];
-            new Random().nextBytes(array);
-            String generatedString = new String(array, Charset.forName("UTF-8"));
-            Log.d("generatedString", generatedString);
             Log.d("EncryptedWithAES", encryptedText);
-            String decdata = aes.decrypt(encryptedText);
-            Log.d("DecryptedWithAES", decdata);
             AESKey = Base64.encodeToString(aes.getKeyValue(), Base64.DEFAULT);
             IV = Base64.encodeToString(aes.getIV(), Base64.DEFAULT);
         } catch (Exception e) {

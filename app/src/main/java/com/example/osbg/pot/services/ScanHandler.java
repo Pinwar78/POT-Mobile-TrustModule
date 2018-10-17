@@ -56,39 +56,42 @@ public class ScanHandler {
     }
 
     private void openDapp(String scanResult){
-        final DappLoader dappLoader = new DappLoader(context, "testing") {
-            @Override
-            public void onDataLoaded(final File dappDir){
-                NodeRequest nodeRequest = new NodeRequest(context);
-                try {
-                    nodeRequest.getBytesDapp("", Request.Method.GET, "", new INodeRequestCallback<byte[]>() {
-                        @Override
-                        public void onSuccess(byte[] response) {
-                            File dappDir = new File(filesHandler.getDappsDir(), "testing");
-                            File indexFile = new File(dappDir, "index.html");
-//                            try {
-//                                indexFile.createNewFile();
-//                                FileOutputStream fileStream = new FileOutputStream(indexFile);
-//                                fileStream.write(response);
-//                                fileStream.close();
-//                            } catch (IOException e) {
-//                                e.printStackTrace();
-//                                Log.d("POTT ERROR", "CANT SAVE");
-//                            }
+//        final DappLoader dappLoader = new DappLoader(context, "testing") {
+//            @Override
+//            public void onDataLoaded(final File dappDir){
+//                NodeRequest nodeRequest = new NodeRequest(context);
+//                try {
+//                    nodeRequest.getBytesDapp("", Request.Method.GET, "", new INodeRequestCallback<byte[]>() {
+//                        @Override
+//                        public void onSuccess(byte[] response) {
+//                            File dappDir = new File(filesHandler.getDappsDir(), "testing");
+//                            File indexFile = new File(dappDir, "index.html");
+////                            try {
+////                                indexFile.createNewFile();
+////                                FileOutputStream fileStream = new FileOutputStream(indexFile);
+////                                fileStream.write(response);
+////                                fileStream.close();
+////                            } catch (IOException e) {
+////                                e.printStackTrace();
+////                                Log.d("POTT ERROR", "CANT SAVE");
+////                            }
+//
+//                            Intent webviewIntent = new Intent(context.getApplicationContext(), DappActivity.class);
+//                            webviewIntent.putExtra("indexFile", indexFile);
+//                            context.startActivity(webviewIntent);
+//                        }
+//                    });
+//                } catch (Exception e) {
+//                    e.printStackTrace();
+//                }
+//
+//            }
+//        };
+//
+//        dappLoader.loadDapp();
 
-                            Intent webviewIntent = new Intent(context.getApplicationContext(), DappActivity.class);
-                            webviewIntent.putExtra("indexFile", indexFile);
-                            context.startActivity(webviewIntent);
-                        }
-                    });
-                } catch (Exception e) {
-                    e.printStackTrace();
-                }
-
-            }
-        };
-
-        dappLoader.loadDapp();
+        Intent webviewIntent = new Intent(context.getApplicationContext(), DappActivity.class);
+        context.startActivity(webviewIntent);
     }
 
     private void connectToNode(String scanResult){
